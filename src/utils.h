@@ -9,7 +9,7 @@
 
 namespace utils {
 
-    bool is_valid_double(double d);
+    inline bool is_valid_double(double d);
 
 }
 
