@@ -21,9 +21,21 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
+    <ClCompile Include="src\buckets.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="src\naive.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Parameters.h">
+      <Filter>Hlavičkové soubory</Filter>
+    </ClInclude>
+    <ClInclude Include="src\buckets.h">
+      <Filter>Hlavičkové soubory</Filter>
+    </ClInclude>
+    <ClInclude Include="src\naive.h">
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
   </ItemGroup>

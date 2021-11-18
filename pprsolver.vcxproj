@@ -24,6 +24,7 @@
     <ProjectGuid>{e22e1942-de0b-4aed-8a6f-0fbab318b9b9}</ProjectGuid>
     <RootNamespace>PPR</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>pprsolver</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -139,11 +140,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\buckets.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Parameters.cpp" />
+    <ClCompile Include="src\naive.cpp" />
+    <ClCompile Include="src\parameters.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Parameters.h" />
+    <ClInclude Include="src\buckets.h" />
+    <ClInclude Include="src\naive.h" />
+    <ClInclude Include="src\parameters.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
