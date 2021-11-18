@@ -6,9 +6,11 @@
  */
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include "parameters.h"
 
 int parseParams(int argc, char *argv[], ProgramParams *params) {
+    std::cout << "Parsing program params...\n";
     if (argc != 4) {
         return -1;
     }

@@ -6,32 +6,39 @@
  */
 #include <iostream>
 #include "parameters.h"
-#include "naive.h"
 #include "buckets.h"
 
 void help() {
-    std::cout << "Invalid program params, usage:\n";
-    std::cout << "pprsolver.exe file percentile processor\n";
-    std::cout << "\t file - file path\n";
-    std::cout << "\t percentile - number 1 - 100\n";
-    std::cout << "\t processor - \"single\" / \"SMP\" / OpenCL device name\n";
+    std::cout << "Invalid program params, usage:" << std::endl;
+    std::cout << "pprsolver.exe file percentile processor" << std::endl;
+    std::cout << "\t file - file path" << std::endl;
+    std::cout << "\t percentile - number 1 - 100" << std::endl;
+    std::cout << "\t processor - \"single\" / \"SMP\" / OpenCL device name" << std::endl;
+}
+
+void print_result(Result *result) {
+    std::cout << "Result found:" << std::endl;
+    std::cout << "- Percentile value: " << result->value << std::endl;
+    std::cout << "- First position: " << result->first_pos << std::endl;
+    std::cout << "- Last position: " << result->last_pos << std::endl;
 }
 
 int main(int argc, char *argv[]) {
+    std::cout << "Starting..." << std::endl;
     struct ProgramParams params{};
     if (parseParams(argc, argv, &params)) {
         help();
         return 0;
     }
+    std::cout << "Params parsed:\n- file: " << params.file_name << "\n- percentile: " << params.percentile
+              << "\n- processor type: " << (int) params.processor << std::endl;
 
-    std::ifstream file(params.file_name, std::ifstream::in | std::ifstream::binary);
-    size_t total_values = 0;
+    auto state = State();
+    // TODO init watchdog
+    struct Result result{};
+    run(params.file_name, params.percentile, params.processor, &state, &result);
 
-    auto limits = find_histogram_limits(&file, &total_values);
-    std::cout << "limits: " << limits.first << " " << limits.second << "\nread: " << total_values << "\n";
-    file.close();
+    print_result(&result);
 
-    //find_percentile_naive(params.file_name, params.percentile);
-
-    std::cout << "Hello World!\n";
+    std::cout << "Program end." << std::endl;
 }

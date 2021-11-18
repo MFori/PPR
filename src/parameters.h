@@ -7,11 +7,7 @@
 #ifndef PPR_PARAMETERS_H
 #define PPR_PARAMETERS_H
 
-enum class ProcessorType {
-    Single,
-    SMP,
-    OpenCL
-};
+#include "percentile_finder.h"
 
 struct ProgramParams {
     char *file_name;
