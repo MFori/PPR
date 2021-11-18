@@ -19,6 +19,6 @@ struct ProgramParams {
     ProcessorType processor;
 };
 
-int parseParams(int argc, char *argv[], ProgramParams &params);
+int parseParams(int argc, char *argv[], ProgramParams *params);
 
 #endif /* PPR_PARAMETERS_H */

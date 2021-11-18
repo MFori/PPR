@@ -6,6 +6,7 @@
  */
 #include <iostream>
 #include "parameters.h"
+#include "naive.h"
 
 void help() {
     std::cout << "Invalid program params, usage:\n";
@@ -16,11 +17,13 @@ void help() {
 }
 
 int main(int argc, char *argv[]) {
-    ProgramParams params{};
-    if (parseParams(argc, argv, params)) {
+    struct ProgramParams params{};
+    if (parseParams(argc, argv, &params)) {
         help();
         return 0;
     }
+
+    find_percentile_naive(params.file_name, params.percentile);
 
     std::cout << "Hello World!\n";
 }

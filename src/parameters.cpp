@@ -8,7 +8,7 @@
 #include <fstream>
 #include "parameters.h"
 
-int parseParams(int argc, char *argv[], ProgramParams &params) {
+int parseParams(int argc, char *argv[], ProgramParams *params) {
     if (argc != 4) {
         return -1;
     }
@@ -21,6 +21,7 @@ int parseParams(int argc, char *argv[], ProgramParams &params) {
     if (!file_good) {
         return -1;
     }
+    params->file_name = argv[1];
 
     int percentile = atoi(argv[2]);
     if (!percentile && strcmp(argv[2], "0") != 0) {
@@ -29,12 +30,12 @@ int parseParams(int argc, char *argv[], ProgramParams &params) {
     if (percentile < 1 || percentile > 100) {
         return -1;
     }
-    params.percentile = percentile;
+    params->percentile = percentile;
 
     if (strcmp(argv[3], "single") == 0) {
-        params.processor = ProcessorType::Single;
+        params->processor = ProcessorType::Single;
     } else if (strcmp(argv[3], "SMP") == 0) {
-        params.processor = ProcessorType::SMP;
+        params->processor = ProcessorType::SMP;
     } else {
         // TODO check if OpenCL device available
     }
