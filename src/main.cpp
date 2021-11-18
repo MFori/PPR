@@ -7,6 +7,7 @@
 #include <iostream>
 #include "parameters.h"
 #include "naive.h"
+#include "buckets.h"
 
 void help() {
     std::cout << "Invalid program params, usage:\n";
@@ -23,7 +24,14 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    find_percentile_naive(params.file_name, params.percentile);
+    std::ifstream file(params.file_name, std::ifstream::in | std::ifstream::binary);
+    size_t total_values = 0;
+
+    auto limits = find_histogram_limits(&file, &total_values);
+    std::cout << "limits: " << limits.first << " " << limits.second << "\nread: " << total_values << "\n";
+    file.close();
+
+    //find_percentile_naive(params.file_name, params.percentile);
 
     std::cout << "Hello World!\n";
 }
