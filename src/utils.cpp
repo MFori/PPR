@@ -8,7 +8,12 @@
 #include <cmath>
 #include "utils.h"
 
-inline bool utils::is_valid_double(double d) {
+bool utils::is_valid_double(double d) {
     int cl = std::fpclassify(d);
     return cl == FP_NORMAL || cl == FP_ZERO;
+}
+
+size_t utils::get_file_size(std::ifstream *file) {
+    file->seekg(0, std::ios::end);
+    return file->tellg();
 }

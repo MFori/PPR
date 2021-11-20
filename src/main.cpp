@@ -30,6 +30,22 @@ int main(int argc, char *argv[]) {
         help();
         return 0;
     }
+
+    std::cout << "buckets: " << BUCKETS_COUNT << std::endl;
+
+    double d = 3349999293.1;
+    auto ul = *(unsigned long long*)(&d);
+    int i = ul >> 60u;
+    auto dd = *((double*)&ul);
+    std::cout << "d: " << d << std::endl;
+    std::cout << "ul: " << ul << std::endl;
+    std::cout << "dd: " << dd << std::endl;
+    std::cout << "i: " << i;
+
+    if(true) {
+    //    return 0;
+    }
+
     std::cout << "Params parsed:\n- file: " << params.file_name << "\n- percentile: " << params.percentile
               << "\n- processor type: " << (int) params.processor << std::endl;
 
@@ -41,4 +57,6 @@ int main(int argc, char *argv[]) {
     print_result(&result);
 
     std::cout << "Program end." << std::endl;
+
+    return EXIT_SUCCESS;
 }

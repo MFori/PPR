@@ -7,10 +7,13 @@
 #ifndef PPR_UTILS_H
 #define PPR_UTILS_H
 
+#include <fstream>
+
 namespace utils {
 
-    inline bool is_valid_double(double d);
+    bool is_valid_double(double d);
 
+    size_t get_file_size(std::ifstream *file);
 }
 
 #endif /* PPR_UTILS_H */

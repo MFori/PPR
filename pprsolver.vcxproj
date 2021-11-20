@@ -145,6 +145,7 @@
     <ClCompile Include="src\naive.cpp" />
     <ClCompile Include="src\parameters.cpp" />
     <ClCompile Include="src\percentile_finder.cpp" />
+    <ClCompile Include="src\state.cpp" />
     <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -152,6 +153,7 @@
     <ClInclude Include="src\naive.h" />
     <ClInclude Include="src\parameters.h" />
     <ClInclude Include="src\percentile_finder.h" />
+    <ClInclude Include="src\state.h" />
     <ClInclude Include="src\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
