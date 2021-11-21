@@ -9,43 +9,73 @@
 #include "percentile_finder.h"
 #include "buckets.h"
 #include "utils.h"
+#include "naive.h"
 
 void run(char *file_name, int percentile, ProcessorType processor_type, State *state, Result *result) {
+    //double naive;
+    //find_percentile_naive(file_name, percentile, &naive);
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
-    size_t total_values = 0;
 
-    //find_percentile_naive(params.file_name, params.percentile);
+    std::cout << "buckets: " << BUCKETS_COUNT << std::endl;
 
+    Histogram histogram(state);
     auto file_size = utils::get_file_size(&file);
-
-    // find whole histogram min and max value
-    auto limits = find_histogram_limits(&file, &total_values, state);
-
-    std::cout << "total_values: " << total_values << std::endl;
-
-    // init histogram scope
-    struct Histogram histogram{total_values, limits.first, limits.second};
-    histogram.file_min = 0;
     histogram.file_max = file_size;
 
-    auto buckets = create_buckets(&file, &histogram, state);
+    // find whole histogram min and max value
+    histogram.find_limits(&file);
     std::cout << "total_values: " << histogram.total_values << std::endl;
 
-    size_t bucket_index = -1;
-    limits = find_bucket(percentile, buckets, &histogram, &bucket_index);
-    histogram.value_min = limits.first;
-    histogram.value_max = limits.second;
+    auto buckets = create_buckets(&file, &histogram, state);
+    histogram.percentile_position = get_percentile_position(percentile, histogram.total_values);
+    auto bucket = find_bucket(buckets, &histogram);
+    histogram.shrink(buckets, bucket.first, bucket.second);
 
-    std::cout << "bucket_index: " << bucket_index << std::endl;
-    std::cout << "bucket_size: " << buckets[bucket_index] << std::endl;
+    std::cout << "total_values: " << histogram.total_values << std::endl;
+    std::cout << "bucket_index: " << bucket.first << std::endl;
+    std::cout << "bucket_size: " << buckets[bucket.first] << std::endl;
 
+    double range = histogram.range();
+    while (true) {
+        std::cout << "total_values: " << histogram.total_values << std::endl;
+        std::cout << "bucket_size: " << buckets[bucket.first] << std::endl;
+        buckets = create_sub_buckets(&file, &histogram, state);
 
-    // todo in loop:
-    //buckets = create_sub_buckets(&file, &histogram, state);
-    // todo if bucket size is large split it again and again and again...
-    // todo else find percentile value, and first/last post
+        std::cout << "total_values: " << histogram.total_values << std::endl;
+        std::cout << "bucket_index: " << bucket.first << std::endl;
+        std::cout << "min: " << histogram.value_min << std::endl;
+        std::cout << "max: " << histogram.value_max << std::endl;
+        std::cout << "range: " << histogram.range() << std::endl;
+        std::cout << "position: " << histogram.percentile_position << std::endl;
 
-    result->value = 0.1;
+        bucket = find_sub_bucket(buckets, &histogram);
+        if(bucket.second >= buckets[bucket.first]) {
+            std::cout << "MAY BE ERROR" << std::endl;
+        }
+        histogram.shrink(buckets, bucket.first, bucket.second);
+
+        if (buckets[bucket.first] <= MAX_BUCKET_ITEMS || histogram.range() <= 0) {
+            break;
+        }
+        if(range == histogram.range()) {
+            std::cout << "break range same" << std::endl;
+            break;
+        }
+        range = histogram.range();
+    }
+
+    if (histogram.range() <= 0) {
+        // if histogram min=max take one of them as result value
+        result->value = histogram.value_min;
+    } else {
+        result->value = histogram.get_percentile_value(&file);
+    }
+
+    file.close();
+    std::cout << std::endl << "total_values: " << histogram.total_values << std::endl;
+    std::cout << "bucket_index: " << bucket.first << std::endl;
+    //std::cout << "bucket_size: " << buckets[bucket.first] << std::endl;
+
     result->first_pos = 323;
     result->last_pos = 543;
 }

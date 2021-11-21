@@ -9,44 +9,9 @@
 #include <vector>
 #include <iostream>
 
-std::pair<double, double> find_histogram_limits(std::ifstream *file, size_t *total_values, State *state) {
-    double min = std::numeric_limits<double>::infinity();
-    double max = -std::numeric_limits<double>::infinity();
-    std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
-    size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
-
-    file->seekg(0);
-
-    while (true) {
-        file->read((char *) buffer.data(), buffer_size_bytes);
-        auto read = file->gcount() / NUMBER_SIZE_BYTES;
-        if (read < 1) break;
-
-        for (int i = 0; i < read; i++) {
-            double value = buffer.at(i);
-            if (!utils::is_valid_double(value)) continue;
-
-            (*total_values)++;
-            if (value < min) {
-                min = value;
-            }
-            if (value > max) {
-                max = value;
-            }
-        }
-    }
-
-    std::pair<double, double> pair(floor(min), ceil(max));
-    return pair;
-}
-
-inline bool is_in_histogram(Histogram *histogram, double value) {
-    return value >= histogram->value_min && value <= histogram->value_max;
-}
-
-inline size_t get_bucket_index(double value) {
-    auto content = *((unsigned long long *) &value);
-    return content >> BUCKET_SHIFT;
+long get_percentile_position(int percentile, size_t total_values) {
+    if (percentile == 100) return (long) (total_values - 1);
+    return (long) (((double) percentile / 100.0) * total_values);
 }
 
 std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram, State *state) {
@@ -69,10 +34,10 @@ std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram, Stat
         bool had_valid = false;
         for (int i = 0; i < read; i++) {
             auto value = buffer.at(i);
-            if (!utils::is_valid_double((double) value) || !is_in_histogram(histogram, value)) continue;
+            if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
             histogram->total_values++;
 
-            auto bucket_index = get_bucket_index(value);
+            auto bucket_index = histogram->bucket_index(value);
             buckets[bucket_index]++;
             had_valid = true;
         }
@@ -90,12 +55,6 @@ std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram, Stat
     histogram->file_max = file_max;
 
     return buckets;
-}
-
-inline size_t get_sub_bucket_index(double value, Histogram *histogram) {
-    double range = (histogram->value_max + 1) - histogram->value_min;
-    size_t bucket_size = range / BUCKETS_COUNT;
-    return floor((value - histogram->value_min) / bucket_size);
 }
 
 std::vector<long> create_sub_buckets(std::ifstream *file, Histogram *histogram, State *state) {
@@ -107,9 +66,15 @@ std::vector<long> create_sub_buckets(std::ifstream *file, Histogram *histogram, 
     size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
 
     file->clear();
-    file->seekg(histogram->file_min * NUMBER_SIZE_BYTES);
+    //todo file->seekg(histogram->file_min * NUMBER_SIZE_BYTES);
+    file->seekg(0 * NUMBER_SIZE_BYTES);
+    bool ct = histogram->total_values == 4;
     histogram->total_values = 0;
 
+    double prev;
+    bool has_prev = false;
+    bool same = true;
+    double min, max;
     while (true) {
         file->read((char *) buffer.data(), buffer_size_bytes);
         auto read = file->gcount() / NUMBER_SIZE_BYTES;
@@ -118,10 +83,34 @@ std::vector<long> create_sub_buckets(std::ifstream *file, Histogram *histogram, 
         bool had_valid = false;
         for (int i = 0; i < read; i++) {
             auto value = buffer.at(i);
-            if (!utils::is_valid_double((double) value) || !is_in_histogram(histogram, value)) continue;
+            if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
             histogram->total_values++;
 
-            auto bucket_index = get_sub_bucket_index(value, histogram);
+            if (ct) {
+                std::cout << "4: " << value << std::endl;
+            }
+
+            if (has_prev && same) {
+                same = prev == value;
+            }
+            if (!has_prev) {
+                min = value;
+                max = value;
+            } else {
+                if (value < min) min = value;
+                if (value > max) max = value;
+            }
+
+            prev = value;
+            has_prev = true;
+
+            auto bucket_index = histogram->bucket_index(value);
+            if (bucket_index >= buckets.size()) {
+                std::cout << "shrink " << histogram->is_shrink << std::endl;
+                std::cout << "value: " << value << " min: " << histogram->value_min << " max: " << histogram->value_max
+                          << " size: " << histogram->bucket_size() << " range: " << histogram->range() << std::endl;
+                std::cout << " > " << bucket_index << ", " << buckets.size() << std::endl;
+            }
             buckets[bucket_index]++;
             had_valid = true;
         }
@@ -132,8 +121,12 @@ std::vector<long> create_sub_buckets(std::ifstream *file, Histogram *histogram, 
             file_max = file_position;
         }
 
-        if (file_position >= histogram->file_max) break;
+        //if (file_position >= histogram->file_max) break;
     }
+
+    std::cout << "same: " << same << std::endl;
+    //std::cout << "min: " << min << std::endl;
+    //std::cout << "max: " << max << std::endl;
 
     histogram->file_min = file_min;
     histogram->file_max = file_max;
@@ -141,36 +134,59 @@ std::vector<long> create_sub_buckets(std::ifstream *file, Histogram *histogram, 
     return buckets;
 }
 
-std::pair<double, double>
-find_bucket(int percentile, const std::vector<long> &buckets, Histogram *histogram, size_t *bucket_index) {
-    long percentile_position = (long) (((double) percentile / 100.0) * histogram->total_values);
+std::pair<size_t, size_t> find_bucket(const std::vector<long> &buckets, Histogram *histogram) {
+    long percentile_position = histogram->percentile_position;
     long count = 0;
-    *bucket_index = -1;
-    size_t index;
+    size_t bucket_index;
+    bool found = false;
 
-    for (index = buckets.size() - 1; index > buckets.size() / 2; index--) {
-        count += buckets[index];
-        if (count >= percentile_position) {
-            *bucket_index = index;
+    for (bucket_index = buckets.size() - 1; bucket_index > buckets.size() / 2; bucket_index--) {
+        count += buckets[bucket_index];
+        if (count > percentile_position) {
+            found = true;
             break;
         }
     }
 
-    if (*bucket_index == -1) {
-        for (index = 0; index <= buckets.size() / 2; index++) {
-            count += buckets[index];
-            if (count >= percentile_position) {
-                *bucket_index = index;
+    if (!found) {
+        for (bucket_index = 0; bucket_index <= buckets.size() / 2; bucket_index++) {
+            count += buckets[bucket_index];
+            if (count > percentile_position) {
                 break;
             }
         }
     }
 
-    // todo find limits
-    auto limits = std::pair<double, double>(0, 1);
-    return limits;
+    size_t bucket_percentile_position = percentile_position - (count - buckets[bucket_index]);
+    auto res = std::pair<size_t, size_t>(bucket_index, bucket_percentile_position);
+    return res;
 }
 
-size_t find_sub_bucket(int percentile) {
-    return -1;
+std::pair<size_t, size_t> find_sub_bucket(const std::vector<long> &buckets, Histogram *histogram) {
+    long percentile_position = histogram->percentile_position;
+    std::cout << "p_pos: " << percentile_position << std::endl;
+    long count = 0;
+    size_t bucket_index;
+
+    for (bucket_index = 0; bucket_index < buckets.size(); bucket_index++) {
+        count += buckets[bucket_index];
+        if (count > percentile_position) {
+            break;
+        }
+    }
+
+    if (bucket_index >= buckets.size()) {
+        std::cout << "HERE" << buckets.size() << std::endl;
+        bucket_index = buckets.size() - 1;
+        while (buckets[bucket_index] == 0 && bucket_index > 0) {
+            bucket_index--;
+            std::cout << "DOWN " << bucket_index << std::endl;
+        }
+    }
+
+    std::cout << "count: " << count << std::endl;
+    std::cout << "buckets: " << buckets.size() << ", index: " << bucket_index << std::endl;
+    size_t bucket_percentile_position = percentile_position - (count - buckets[bucket_index]);
+    auto res = std::pair<size_t, size_t>(bucket_index, bucket_percentile_position);
+    return res;
 }

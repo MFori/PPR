@@ -10,9 +10,12 @@
 #include <algorithm>
 #include "naive.h"
 
-void find_percentile_naive(char *file_name, int percentile) {
+std::pair<long, long> find_percentile_naive(char *file_name, int percentile, double *value) {
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
-    if (!file.is_open()) return;
+    if (!file.is_open()) {
+        std::pair<long, long> res(0, 0);
+        return res;
+    }
     std::vector<char> buffer(8000);
 
     std::vector<double> numbers;
@@ -29,6 +32,7 @@ void find_percentile_naive(char *file_name, int percentile) {
 
     std::sort(numbers.begin(), numbers.end());
     long n = (long) (((float) percentile / 100) * numbers.size());
+    if (percentile == 100) n = (long) (numbers.size() - 1);
     double percentile_value = numbers.at(n);
 
     file.clear();
@@ -43,11 +47,11 @@ void find_percentile_naive(char *file_name, int percentile) {
         auto read = file.gcount() / 8;
         if (read < 1) break;
 
-        for (int i = 0; i < read; i++) {
+        for (int i = 1; i < read; i++) {
             double value = ((double *) buffer.data())[i];
 
-            if(value == percentile_value) {
-                if(first == -1) {
+            if (value == percentile_value) {
+                if (first == -1) {
                     first = pos;
                 }
                 last = pos;
@@ -57,5 +61,9 @@ void find_percentile_naive(char *file_name, int percentile) {
         }
     }
 
-    std::cout << "\n" << percentile_value << "\n" << first << "\n" << last << std::endl;
+    file.close();
+    std::cout << "naive:\n" << percentile_value << "\n" << first << "\n" << last << std::endl;
+    *value = percentile_value;
+    std::pair<long, long> res(first, last);
+    return res;
 }
