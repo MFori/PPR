@@ -44,11 +44,7 @@ public:
 
     void shrink(const std::vector<long> &buckets, size_t bucket_index, size_t bucket_percentile_position);
 
-    double get_percentile_value(std::ifstream *file);
-
     unsigned long get_buckets_count() const;
-
-    std::pair<size_t, size_t> get_value_positions(std::ifstream *file, double value) const;
 
 private:
     unsigned int bucket_bits = BUCKET_BITS_START;

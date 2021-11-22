@@ -20,4 +20,9 @@ std::pair<size_t, size_t> find_bucket(const std::vector<long> &buckets, Histogra
 
 long get_percentile_position(int percentile, size_t total_values);
 
+double get_percentile_value(std::ifstream *file, Histogram *histogram);
+
+std::pair<size_t, size_t> get_value_positions(std::ifstream *file, Histogram *histogram, double value);
+
+
 #endif /* PPR_BUCKETS_H */

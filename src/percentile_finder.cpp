@@ -52,10 +52,10 @@ void run(char *file_name, int percentile, ProcessorType processor_type, State *s
         // if histogram min=max take one of them as result value
         result->value = *((double *) &histogram.value_min);
     } else {
-        result->value = histogram.get_percentile_value(&file);
+        result->value = get_percentile_value(&file, &histogram);
     }
 
-    auto positions = histogram.get_value_positions(&file, result->value);
+    auto positions = get_value_positions(&file, &histogram, result->value);
 
     file.close();
 
