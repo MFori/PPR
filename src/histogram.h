@@ -15,45 +15,48 @@ const int BUFFER_SIZE_NUMBERS = 1000;
 const int NUMBER_SIZE_BYTES = 8;
 const int NUMBER_SIZE_BITS = 8 * 8;
 
-const int BUCKET_BITS = 16;
-const unsigned long long BUCKET_MASK = 0x0000FFFFFFFFFFFF;
-const unsigned int BUCKET_SHIFT = NUMBER_SIZE_BITS - BUCKET_BITS;
-const unsigned long BUCKETS_COUNT = (unsigned long) pow(2, BUCKET_BITS);
-const unsigned long SUB_BUCKETS_COUNT = 1000;
+const int BUCKET_STEP_BITS = 4;
+const int BUCKET_BITS_START = 16;
+const int BUCKET_BITS_MAX = 48;
+const unsigned long SUB_BUCKETS_COUNT = (unsigned long) pow(2, BUCKET_STEP_BITS);
+
+const unsigned long long MAX_NUMBER = 0xFFFFFFFFFFFFFFFF;
 const unsigned long MAX_BUCKET_ITEMS = 1000;
 
 class Histogram {
 public:
     size_t total_values = 0;
-    double value_min = 0;
-    double value_max = 0;
+    unsigned long long value_min = 0;
+    unsigned long long value_max = MAX_NUMBER;
     size_t file_min = 0;
     size_t file_max = 0;
-    long percentile_position = 0;
-    bool is_shrink = false;
+    size_t percentile_position = 0;
 
     Histogram(State *state) : state(state) {}
 
-    void find_limits(std::ifstream *file);
-
     bool contains(double value) const;
 
-    double range() const;
-
-    double bucket_size() const;
+    unsigned long long range() const;
 
     size_t bucket_index(double value) const;
+
+    bool can_shrink() const;
 
     void shrink(const std::vector<long> &buckets, size_t bucket_index, size_t bucket_percentile_position);
 
     double get_percentile_value(std::ifstream *file);
 
+    unsigned long get_buckets_count() const;
+
 private:
+    unsigned int bucket_bits = BUCKET_BITS_START;
+    unsigned long long bucket_mask = MAX_NUMBER >> bucket_bits;
+    unsigned int bucket_shift = NUMBER_SIZE_BITS - bucket_bits;
+    unsigned long long min_index = 0;
+    unsigned long buckets_count = (unsigned long) pow(2, bucket_bits);
     State *state;
 
     void shrink_histogram(size_t bucket_index);
-
-    void shrink_sub_histogram(size_t bucket_index);
 };
 
 #endif /* PPR_HISTOGRAM_H */

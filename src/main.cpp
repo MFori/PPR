@@ -35,8 +35,8 @@ int main(int argc, char *argv[]) {
     std::cout << "Params parsed:\n- file: " << params.file_name << "\n- percentile: " << params.percentile
               << "\n- processor type: " << (int) params.processor << std::endl;
 
-    test_1(params.file_name);
-    return 0;
+    //test_1(params.file_name);
+    //return 0;
 
     auto state = State();
     // TODO init watchdog

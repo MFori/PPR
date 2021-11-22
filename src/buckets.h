@@ -15,12 +15,8 @@
 // create buckets, return buckets
 std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram, State *state);
 
-std::vector<long> create_sub_buckets(std::ifstream *file, Histogram *histogram, State *state);
-
 // find bucket with percentile, return bucket index
 std::pair<size_t, size_t> find_bucket(const std::vector<long> &buckets, Histogram *histogram);
-
-std::pair<size_t, size_t> find_sub_bucket(const std::vector<long> &buckets, Histogram *histogram);
 
 long get_percentile_position(int percentile, size_t total_values);
 
