@@ -12,8 +12,8 @@
 #include "naive.h"
 
 void run(char *file_name, int percentile, ProcessorType processor_type, State *state, Result *result) {
-    //double naive;
-    //find_percentile_naive(file_name, percentile, &naive);
+    double naive;
+    find_percentile_naive(file_name, percentile, &naive);
 
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
 
@@ -55,8 +55,10 @@ void run(char *file_name, int percentile, ProcessorType processor_type, State *s
         result->value = histogram.get_percentile_value(&file);
     }
 
+    auto positions = histogram.get_value_positions(&file, result->value);
+
     file.close();
 
-    result->first_pos = 323;
-    result->last_pos = 543;
+    result->first_pos = positions.first;
+    result->last_pos = positions.second;
 }

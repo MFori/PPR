@@ -66,7 +66,7 @@ double Histogram::get_percentile_value(std::ifstream *file) {
     size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
 
     file->clear();
-    file->seekg(0 * NUMBER_SIZE_BYTES);
+    file->seekg(file_min);
 
     while (true) {
         file->read((char *) buffer.data(), buffer_size_bytes);
@@ -86,4 +86,38 @@ double Histogram::get_percentile_value(std::ifstream *file) {
     std::sort(values.begin(), values.end());
     if (percentile_position >= values.size()) percentile_position = values.size() - 1;
     return values[percentile_position];
+}
+
+std::pair<size_t, size_t> Histogram::get_value_positions(std::ifstream *file, double value) const {
+    std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
+    size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
+
+    file->clear();
+    file->seekg(file_min);
+
+    size_t first_position = -1;
+    size_t last_position = -1;
+
+    while (true) {
+        file->read((char *) buffer.data(), buffer_size_bytes);
+        auto read = file->gcount() / NUMBER_SIZE_BYTES;
+        if (read < 1) break;
+
+        size_t file_position = file->tellg();
+
+        for (int i = 0; i < read; i++) {
+            auto val = buffer.at(i);
+            if (val == value) {
+                if (first_position == -1) {
+                    first_position = file_position;
+                }
+                last_position = file_position;
+            }
+        }
+
+        if (file_position >= file_max) break;
+    }
+
+    auto positions = std::pair<size_t, size_t>(first_position, last_position);
+    return positions;
 }

@@ -19,9 +19,9 @@ void help() {
 
 void print_result(Result *result) {
     std::cout << "Result found:" << std::endl;
-    std::cout << "- Percentile value: " << result->value << std::endl;
-    std::cout << "- First position: " << result->first_pos << std::endl;
-    std::cout << "- Last position: " << result->last_pos << std::endl;
+    std::cout << "- Percentile value: " << result->value << " (" << std::hexfloat << std::uppercase << result->value << ")" << std::endl;
+    std::cout << "- First position: " << std::hex << std::uppercase << result->first_pos << std::endl;
+    std::cout << "- Last position: " << std::hex << std::uppercase << result->last_pos << std::endl;
 }
 
 int main(int argc, char *argv[]) {

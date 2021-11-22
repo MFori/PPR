@@ -48,6 +48,8 @@ public:
 
     unsigned long get_buckets_count() const;
 
+    std::pair<size_t, size_t> get_value_positions(std::ifstream *file, double value) const;
+
 private:
     unsigned int bucket_bits = BUCKET_BITS_START;
     unsigned long long bucket_mask = MAX_NUMBER >> bucket_bits;
