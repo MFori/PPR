@@ -11,7 +11,7 @@
 
 // create buckets, return buckets
 std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogram, State *state) {
-    size_t file_min = -1;
+    size_t file_min = 0;
     size_t file_max = histogram->file_max;
 
     std::vector<long> buckets(histogram->get_buckets_count());
@@ -39,7 +39,7 @@ std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogra
             had_valid = true;
         }
 
-        if (had_valid && file_min == -1) {
+        if (had_valid && file_min == 0) {
             file_min = file_position;
         }
         file_position = file->tellg();
@@ -89,8 +89,8 @@ std::pair<size_t, size_t> get_value_positions_single(std::ifstream *file, Histog
     file->clear();
     file->seekg(histogram->file_min);
 
-    size_t first_position = -1;
-    size_t last_position = -1;
+    size_t first_position = 0;
+    size_t last_position = 0;
 
     while (true) {
         size_t file_position = file->tellg();
@@ -101,7 +101,7 @@ std::pair<size_t, size_t> get_value_positions_single(std::ifstream *file, Histog
         for (int i = 0; i < read; i++) {
             auto val = buffer.at(i);
             if (val == value) {
-                if (first_position == -1) {
+                if (first_position == 0) {
                     first_position = file_position + i * NUMBER_SIZE_BYTES;
                 }
                 last_position = file_position + i * NUMBER_SIZE_BYTES;

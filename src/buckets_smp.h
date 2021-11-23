@@ -26,7 +26,7 @@ public:
 
     ~SMPFileReader() {};
 
-    std::vector<double> operator()(tbb::flow_control &fc) const;
+    std::pair<size_t, std::vector<double>> operator()(tbb::flow_control &fc) const;
 
 private:
     std::ifstream *file;
@@ -36,8 +36,8 @@ private:
 };
 
 struct BucketChunk {
-    size_t file_min = -1;
-    size_t file_max = -1;
+    size_t file_min = 0;
+    size_t file_max = 0;
     size_t total_values = 0;
     std::vector<long> buckets;
 };
@@ -46,7 +46,7 @@ class SMPBucketChunksCreator {
 public:
     SMPBucketChunksCreator(Histogram *histogram) : histogram(histogram) {};
 
-    BucketChunk operator()(const std::vector<double> &buffer) const;
+    BucketChunk operator()(const std::pair<size_t, const std::vector<double>> &params) const;
 
 private:
     Histogram *histogram;
@@ -54,58 +54,36 @@ private:
 
 class SMPBucketsCreator {
 public:
-    SMPBucketsCreator(Histogram *histogram, std::vector<long> *buckets) : histogram(histogram), buckets(buckets) {};
+    SMPBucketsCreator(Histogram *histogram, std::vector<long> *buckets, size_t *file_min, size_t *file_max) : histogram(
+            histogram), buckets(buckets), file_min(file_min), file_max(file_max) {};
 
-    void operator()(const BucketChunk& bucketChunk) const;
+    void operator()(const BucketChunk &bucketChunk) const;
 
 private:
     Histogram *histogram;
     std::vector<long> *buckets;
+    size_t *file_min;
+    size_t *file_max;
 };
 
-class Transform {
+class SMPValuesExtractor {
 public:
-    double operator()(double const number) const {
-        double answer = 0.0;
-        if (number > 0.0)
-            answer = number + 1;
-        return answer;
-    }
-};
+    SMPValuesExtractor(Histogram *histogram) : histogram(histogram) {};
 
-class DataWriter {
+    std::vector<double> operator()(const std::pair<size_t, const std::vector<double>> &params) const;
+
 private:
-    FILE *my_output;
-
-public:
-    DataWriter(FILE *out) :
-            my_output{out} {};
-
-    void operator()(double const answer) const {
-    }
+    Histogram *histogram;
 };
 
-class DataReader {
-private:
-    FILE *my_input;
-
+class SMPPercentileFinder {
 public:
-    DataReader(FILE *in) :
-            my_input{in} {};
+    SMPPercentileFinder(std::vector<double> *values) : m_values(values) {};
 
-    DataReader(const DataReader &a) :
-            my_input{a.my_input} {};
+    void operator()(const std::vector<double> &values) const;
 
-    ~DataReader() {};
-
-    double operator()(tbb::flow_control &fc) const {
-        double i = 11;
-        if (i > 10) {
-            fc.stop();
-            return 0.0;
-        }
-        return i;
-    }
+private:
+    std::vector<double> *m_values;
 };
 
 #endif /* PPR_BUCKETS_SMP_H */

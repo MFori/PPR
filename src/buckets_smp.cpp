@@ -12,46 +12,47 @@
 
 std::vector<long> create_buckets_smp(std::ifstream *file, Histogram *histogram, State *state) {
     std::vector<long> buckets(histogram->get_buckets_count());
+    size_t file_min = 0;
+    size_t file_max = 0;
 
     tbb::parallel_pipeline(MAX_LIVE_TOKENS,
-                           tbb::make_filter<void, std::vector<double>>(
+                           tbb::make_filter<void, std::pair<size_t, std::vector<double>>>(
                                    tbb::filter_mode::serial_in_order, SMPFileReader(file, histogram)
                            )
                            &
-                           tbb::make_filter<std::vector<double>, BucketChunk>(
+                           tbb::make_filter<std::pair<size_t, std::vector<double>>, BucketChunk>(
                                    tbb::filter_mode::parallel, SMPBucketChunksCreator(histogram)
                            )
                            &
                            tbb::make_filter<BucketChunk, void>(
-                                   tbb::filter_mode::serial_out_of_order, SMPBucketsCreator(histogram, &buckets)
+                                   tbb::filter_mode::serial_out_of_order,
+                                   SMPBucketsCreator(histogram, &buckets, &file_min, &file_max)
                            )
     );
+
+    histogram->file_min = file_min;
+    histogram->file_max = file_max;
 
     return buckets;
 }
 
 double get_percentile_value_smp(std::ifstream *file, Histogram *histogram) {
     std::vector<double> values;
-    std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
-    size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
 
-    file->clear();
-    file->seekg(histogram->file_min);
-
-    while (true) {
-        file->read((char *) buffer.data(), buffer_size_bytes);
-        auto read = file->gcount() / NUMBER_SIZE_BYTES;
-        if (read < 1) break;
-
-        for (int i = 0; i < read; i++) {
-            auto value = buffer.at(i);
-            if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
-            values.push_back(value);
-        }
-
-        size_t file_position = file->tellg();
-        if (file_position >= histogram->file_max) break;
-    }
+    tbb::parallel_pipeline(MAX_LIVE_TOKENS,
+                           tbb::make_filter<void, std::pair<size_t, std::vector<double>>>(
+                                   tbb::filter_mode::serial_in_order, SMPFileReader(file, histogram)
+                           )
+                           &
+                           tbb::make_filter<std::pair<size_t, std::vector<double>>, std::vector<double>>(
+                                   tbb::filter_mode::parallel, SMPValuesExtractor(histogram)
+                           )
+                           &
+                           tbb::make_filter<std::vector<double>, void>(
+                                   tbb::filter_mode::serial_out_of_order,
+                                   SMPPercentileFinder(&values)
+                           )
+    );
 
     std::sort(values.begin(), values.end());
     if (histogram->percentile_position >= values.size()) histogram->percentile_position = values.size() - 1;
@@ -65,8 +66,8 @@ std::pair<size_t, size_t> get_value_positions_smp(std::ifstream *file, Histogram
     file->clear();
     file->seekg(histogram->file_min);
 
-    size_t first_position = -1;
-    size_t last_position = -1;
+    size_t first_position = 0;
+    size_t last_position = 0;
 
     while (true) {
         size_t file_position = file->tellg();
@@ -77,7 +78,7 @@ std::pair<size_t, size_t> get_value_positions_smp(std::ifstream *file, Histogram
         for (int i = 0; i < read; i++) {
             auto val = buffer.at(i);
             if (val == value) {
-                if (first_position == -1) {
+                if (first_position == 0) {
                     first_position = file_position + i * NUMBER_SIZE_BYTES;
                 }
                 last_position = file_position + i * NUMBER_SIZE_BYTES;
@@ -97,12 +98,11 @@ void SMPFileReader::init() {
     histogram->total_values = 0;
 }
 
-std::vector<double> SMPFileReader::operator()(tbb::flow_control &fc) const {
-    //std::cout << "file reader " << std::endl;
+std::pair<size_t, std::vector<double>> SMPFileReader::operator()(tbb::flow_control &fc) const {
     std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
     size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
 
-    size_t file_position = file->tellg();
+    size_t file_position = (size_t) file->tellg();
     if (file_position >= histogram->file_max) {
         fc.stop();
     }
@@ -113,20 +113,19 @@ std::vector<double> SMPFileReader::operator()(tbb::flow_control &fc) const {
         fc.stop();
     }
 
-    auto result = std::vector<double>(buffer.begin(), buffer.begin() + read);
-    //std::cout << "read: " << read << " " << result.size() << " " << buffer.size() << std::endl;
-    //auto result = std::pair<size_t, std::vector<double>>(read, buffer);
+    auto result_buffer = std::vector<double>(buffer.begin(), buffer.begin() + read);
+    auto result = std::pair<size_t, std::vector<double>>(file_position, result_buffer);
     return result;
 }
 
-BucketChunk SMPBucketChunksCreator::operator()(const std::vector<double> &buffer) const {
-    //std::cout << "chunk creator " << std::endl;
+BucketChunk SMPBucketChunksCreator::operator()(const std::pair<size_t, const std::vector<double>> &params) const {
+    auto buffer = params.second;
     auto read = buffer.size();
-    //std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
+    size_t file_position = params.first;
     std::vector<long> buckets(histogram->get_buckets_count());
 
     BucketChunk chunk{};
-    chunk.file_min = -1;
+    chunk.file_min = 0;
     chunk.file_max = histogram->file_max;
     chunk.total_values = 0;
 
@@ -141,12 +140,24 @@ BucketChunk SMPBucketChunksCreator::operator()(const std::vector<double> &buffer
         had_valid = true;
     }
 
+    if (had_valid) {
+        chunk.file_min = file_position;
+        chunk.file_max = file_position + (BUFFER_SIZE_NUMBERS * NUMBER_SIZE_BYTES);
+    }
+
     chunk.buckets = buckets;
     return chunk;
 }
 
-void SMPBucketsCreator::operator()(const BucketChunk& bucketChunk) const {
+void SMPBucketsCreator::operator()(const BucketChunk &bucketChunk) const {
     histogram->total_values += bucketChunk.total_values;
+
+    if ((bucketChunk.file_min != 0 && bucketChunk.file_min < *file_min) || *file_min == 0) {
+        *file_min = bucketChunk.file_min;
+    }
+    if (bucketChunk.file_max > *file_max) {
+        *file_max = bucketChunk.file_max;
+    }
 
     std::transform(
             buckets->begin(),
@@ -155,4 +166,22 @@ void SMPBucketsCreator::operator()(const BucketChunk& bucketChunk) const {
             buckets->begin(),
             std::plus<>()
     );
+}
+
+std::vector<double> SMPValuesExtractor::operator()(const std::pair<size_t, const std::vector<double>> &params) const {
+    std::vector<double> values;
+    auto buffer = params.second;
+    auto read = buffer.size();
+
+    for (int i = 0; i < read; i++) {
+        auto value = buffer.at(i);
+        if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
+        values.push_back(value);
+    }
+
+    return values;
+}
+
+void SMPPercentileFinder::operator()(const std::vector<double> &values) const {
+    m_values->insert(m_values->end(), values.begin(), values.end());
 }
