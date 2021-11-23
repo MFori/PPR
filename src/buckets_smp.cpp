@@ -60,33 +60,23 @@ double get_percentile_value_smp(std::ifstream *file, Histogram *histogram) {
 }
 
 std::pair<size_t, size_t> get_value_positions_smp(std::ifstream *file, Histogram *histogram, double value) {
-    std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
-    size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
-
-    file->clear();
-    file->seekg(histogram->file_min);
-
     size_t first_position = 0;
     size_t last_position = 0;
 
-    while (true) {
-        size_t file_position = file->tellg();
-        file->read((char *) buffer.data(), buffer_size_bytes);
-        auto read = file->gcount() / NUMBER_SIZE_BYTES;
-        if (read < 1) break;
-
-        for (int i = 0; i < read; i++) {
-            auto val = buffer.at(i);
-            if (val == value) {
-                if (first_position == 0) {
-                    first_position = file_position + i * NUMBER_SIZE_BYTES;
-                }
-                last_position = file_position + i * NUMBER_SIZE_BYTES;
-            }
-        }
-
-        if (file_position >= histogram->file_max) break;
-    }
+    tbb::parallel_pipeline(MAX_LIVE_TOKENS,
+                           tbb::make_filter<void, std::pair<size_t, std::vector<double>>>(
+                                   tbb::filter_mode::serial_in_order, SMPFileReader(file, histogram)
+                           )
+                           &
+                           tbb::make_filter<std::pair<size_t, std::vector<double>>, std::pair<size_t, size_t>>(
+                                   tbb::filter_mode::parallel, SMPPositionsExtractor(value)
+                           )
+                           &
+                           tbb::make_filter<std::pair<size_t, size_t>, void>(
+                                   tbb::filter_mode::serial_out_of_order,
+                                   SMPPositionsFinder(&first_position, &last_position)
+                           )
+    );
 
     auto positions = std::pair<size_t, size_t>(first_position, last_position);
     return positions;
@@ -184,4 +174,35 @@ std::vector<double> SMPValuesExtractor::operator()(const std::pair<size_t, const
 
 void SMPPercentileFinder::operator()(const std::vector<double> &values) const {
     m_values->insert(m_values->end(), values.begin(), values.end());
+}
+
+std::pair<size_t, size_t>
+SMPPositionsExtractor::operator()(const std::pair<size_t, const std::vector<double>> &params) const {
+    size_t first_position = 0;
+    size_t last_position = 0;
+    auto buffer = params.second;
+    auto read = buffer.size();
+    size_t file_position = params.first;
+
+    for (int i = 0; i < read; i++) {
+        auto val = buffer.at(i);
+        if (val == value) {
+            if (first_position == 0) {
+                first_position = file_position + i * NUMBER_SIZE_BYTES;
+            }
+            last_position = file_position + i * NUMBER_SIZE_BYTES;
+        }
+    }
+
+    auto positions = std::pair<size_t, size_t>(first_position, last_position);
+    return positions;
+}
+
+void SMPPositionsFinder::operator()(const std::pair<size_t, size_t> &position) const {
+    if ((position.first != 0 && position.first < *first_position) || *first_position == 0) {
+        *first_position = position.first;
+    }
+    if (position.second > *last_position) {
+        *last_position = position.second;
+    }
 }

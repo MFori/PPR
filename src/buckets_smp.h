@@ -86,4 +86,26 @@ private:
     std::vector<double> *m_values;
 };
 
+class SMPPositionsExtractor {
+public:
+    SMPPositionsExtractor(double value) : value(value) {};
+
+    std::pair<size_t, size_t> operator()(const std::pair<size_t, const std::vector<double>> &params) const;
+
+private:
+    double value;
+};
+
+class SMPPositionsFinder {
+public:
+    SMPPositionsFinder(size_t *first_position, size_t *last_position) : first_position(first_position),
+                                                                        last_position(last_position) {};
+
+    void operator()(const std::pair<size_t, size_t> &position) const;
+
+private:
+    size_t *first_position;
+    size_t *last_position;
+};
+
 #endif /* PPR_BUCKETS_SMP_H */
