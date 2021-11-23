@@ -8,12 +8,7 @@
 #define PPR_PERCENTILE_FINDER_H
 
 #include "state.h"
-
-enum class ProcessorType {
-    Single,
-    SMP,
-    OpenCL
-};
+#include "buckets.h"
 
 struct Result {
     double value;

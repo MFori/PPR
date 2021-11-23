@@ -5,10 +5,17 @@
  * Author: Martin Forejt
  */
 #include "buckets.h"
-#include "utils.h"
 #include <vector>
 #include <iostream>
-#include <algorithm>
+#include "buckets_single.h"
+#include "buckets_smp.h"
+
+ProcessorType buckets_proc_type;
+
+void set_processor_type(ProcessorType processor_type) {
+    buckets_proc_type = processor_type;
+}
+
 
 long get_percentile_position(int percentile, size_t total_values) {
     if (percentile == 100) return (long) (total_values - 1);
@@ -16,46 +23,14 @@ long get_percentile_position(int percentile, size_t total_values) {
 }
 
 std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram, State *state) {
-    size_t file_min = -1;
-    size_t file_max = histogram->file_max;
-
-    std::vector<long> buckets(histogram->get_buckets_count());
-    std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
-    size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
-
-    file->clear();
-    file->seekg(histogram->file_min);
-    histogram->total_values = 0;
-
-    while (true) {
-        file->read((char *) buffer.data(), buffer_size_bytes);
-        auto read = file->gcount() / NUMBER_SIZE_BYTES;
-        if (read < 1) break;
-
-        bool had_valid = false;
-        for (int i = 0; i < read; i++) {
-            auto value = buffer.at(i);
-            if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
-            histogram->total_values++;
-
-            auto bucket_index = histogram->bucket_index(value);
-            buckets[bucket_index]++;
-            had_valid = true;
-        }
-
-        size_t file_position = file->tellg();
-        if (had_valid) {
-            if (file_min == -1) file_min = file_position;
-            file_max = file_position;
-        }
-
-        if (file_position >= histogram->file_max) break;
+    if(buckets_proc_type == ProcessorType::OpenCL) {
+        // todo openCl
+        return create_buckets_smp(file, histogram, state);
+    } else if(buckets_proc_type == ProcessorType::SMP) {
+        return create_buckets_smp(file, histogram, state);
+    } else {
+        return create_buckets_single(file, histogram, state);
     }
-
-    histogram->file_min = file_min;
-    histogram->file_max = file_max;
-
-    return buckets;
 }
 
 std::pair<size_t, size_t> find_bucket(const std::vector<long> &buckets, Histogram *histogram) {
@@ -87,63 +62,23 @@ std::pair<size_t, size_t> find_bucket(const std::vector<long> &buckets, Histogra
 }
 
 double get_percentile_value(std::ifstream *file, Histogram *histogram) {
-    std::vector<double> values;
-    std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
-    size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
-
-    file->clear();
-    file->seekg(histogram->file_min);
-
-    while (true) {
-        file->read((char *) buffer.data(), buffer_size_bytes);
-        auto read = file->gcount() / NUMBER_SIZE_BYTES;
-        if (read < 1) break;
-
-        for (int i = 0; i < read; i++) {
-            auto value = buffer.at(i);
-            if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
-            values.push_back(value);
-        }
-
-        size_t file_position = file->tellg();
-        if (file_position >= histogram->file_max) break;
+    if(buckets_proc_type == ProcessorType::OpenCL) {
+        // todo openCl
+        return get_percentile_value_smp(file, histogram);
+    } else if(buckets_proc_type == ProcessorType::SMP) {
+        return get_percentile_value_smp(file, histogram);
+    } else {
+        return get_percentile_value_single(file, histogram);
     }
-
-    std::sort(values.begin(), values.end());
-    if (histogram->percentile_position >= values.size()) histogram->percentile_position = values.size() - 1;
-    return values[histogram->percentile_position];
 }
 
 std::pair<size_t, size_t> get_value_positions(std::ifstream *file, Histogram *histogram, double value) {
-    std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
-    size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
-
-    file->clear();
-    file->seekg(histogram->file_min);
-
-    size_t first_position = -1;
-    size_t last_position = -1;
-
-    while (true) {
-        file->read((char *) buffer.data(), buffer_size_bytes);
-        auto read = file->gcount() / NUMBER_SIZE_BYTES;
-        if (read < 1) break;
-
-        size_t file_position = file->tellg();
-
-        for (int i = 0; i < read; i++) {
-            auto val = buffer.at(i);
-            if (val == value) {
-                if (first_position == -1) {
-                    first_position = file_position;
-                }
-                last_position = file_position;
-            }
-        }
-
-        if (file_position >= histogram->file_max) break;
+    if(buckets_proc_type == ProcessorType::OpenCL) {
+        // todo openCl
+        return get_value_positions_smp(file, histogram, value);
+    } else if(buckets_proc_type == ProcessorType::SMP) {
+        return get_value_positions_smp(file, histogram, value);
+    } else {
+        return get_value_positions_single(file, histogram, value);
     }
-
-    auto positions = std::pair<size_t, size_t>(first_position, last_position);
-    return positions;
 }

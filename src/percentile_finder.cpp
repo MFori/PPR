@@ -7,19 +7,19 @@
 #include <fstream>
 #include <iostream>
 #include "percentile_finder.h"
-#include "buckets.h"
 #include "utils.h"
 #include "naive.h"
 
 void run(char *file_name, int percentile, ProcessorType processor_type, State *state, Result *result) {
-    double naive;
-    find_percentile_naive(file_name, percentile, &naive);
+    //double naive;
+    //find_percentile_naive(file_name, percentile, &naive);
 
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
 
     Histogram histogram(state);
     auto file_size = utils::get_file_size(&file);
     histogram.file_max = file_size;
+    set_processor_type(processor_type);
 
     std::vector<long> buckets;
     std::pair<size_t, size_t> bucket;
