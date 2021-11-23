@@ -5,6 +5,7 @@
  * Author: Martin Forejt
  */
 #include <algorithm>
+#include <iostream>
 #include "buckets_single.h"
 #include "utils.h"
 
@@ -22,6 +23,7 @@ std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogra
     histogram->total_values = 0;
 
     while (true) {
+        size_t file_position = file->tellg();
         file->read((char *) buffer.data(), buffer_size_bytes);
         auto read = file->gcount() / NUMBER_SIZE_BYTES;
         if (read < 1) break;
@@ -37,11 +39,11 @@ std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogra
             had_valid = true;
         }
 
-        size_t file_position = file->tellg();
-        if (had_valid) {
-            if (file_min == -1) file_min = file_position;
-            file_max = file_position;
+        if (had_valid && file_min == -1) {
+            file_min = file_position;
         }
+        file_position = file->tellg();
+        if (had_valid) file_max = file_position;
 
         if (file_position >= histogram->file_max) break;
     }
@@ -80,7 +82,7 @@ double get_percentile_value_single(std::ifstream *file, Histogram *histogram) {
     return values[histogram->percentile_position];
 }
 
-std::pair <size_t, size_t> get_value_positions_single(std::ifstream *file, Histogram *histogram, double value) {
+std::pair<size_t, size_t> get_value_positions_single(std::ifstream *file, Histogram *histogram, double value) {
     std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
     size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
 
@@ -91,19 +93,18 @@ std::pair <size_t, size_t> get_value_positions_single(std::ifstream *file, Histo
     size_t last_position = -1;
 
     while (true) {
+        size_t file_position = file->tellg();
         file->read((char *) buffer.data(), buffer_size_bytes);
         auto read = file->gcount() / NUMBER_SIZE_BYTES;
         if (read < 1) break;
-
-        size_t file_position = file->tellg();
 
         for (int i = 0; i < read; i++) {
             auto val = buffer.at(i);
             if (val == value) {
                 if (first_position == -1) {
-                    first_position = file_position;
+                    first_position = file_position + i * NUMBER_SIZE_BYTES;
                 }
-                last_position = file_position;
+                last_position = file_position + i * NUMBER_SIZE_BYTES;
             }
         }
 

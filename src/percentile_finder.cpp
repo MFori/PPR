@@ -30,6 +30,7 @@ void run(char *file_name, int percentile, ProcessorType processor_type, State *s
         if (step == 0) {
             histogram.percentile_position = get_percentile_position(percentile, histogram.total_values);
         }
+        std::cout << "total_values: " << histogram.total_values << std::endl;
         bucket = find_bucket(buckets, &histogram);
         histogram.shrink(buckets, bucket.first, bucket.second);
 

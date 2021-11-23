@@ -10,7 +10,7 @@
 #include <fstream>
 #include "state.h"
 
-const int BUFFER_SIZE_NUMBERS = 1000;
+const int BUFFER_SIZE_NUMBERS = 50000;
 
 const int NUMBER_SIZE_BYTES = 8;
 const int NUMBER_SIZE_BITS = 8 * 8;

@@ -145,23 +145,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\buckets.cpp" />
+    <ClCompile Include="src\buckets_single.cpp" />
+    <ClCompile Include="src\buckets_smp.cpp" />
     <ClCompile Include="src\histogram.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\naive.cpp" />
     <ClCompile Include="src\parameters.cpp" />
     <ClCompile Include="src\percentile_finder.cpp" />
-    <ClCompile Include="src\smp_file_reader.cpp" />
     <ClCompile Include="src\state.cpp" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\buckets.h" />
+    <ClInclude Include="src\buckets_single.h" />
+    <ClInclude Include="src\buckets_smp.h" />
     <ClInclude Include="src\histogram.h" />
     <ClInclude Include="src\naive.h" />
     <ClInclude Include="src\parameters.h" />
     <ClInclude Include="src\percentile_finder.h" />
-    <ClInclude Include="src\smp_file_reader.h" />
     <ClInclude Include="src\state.h" />
     <ClInclude Include="src\test.h" />
     <ClInclude Include="src\utils.h" />
