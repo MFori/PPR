@@ -89,6 +89,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\lib\intel64\vc14;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -103,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\lib\intel64\vc14;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -117,6 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\lib\intel64\vc14;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\include;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\lib\intel64\vc14;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\include\tbb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,6 +134,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\lib\intel64\vc14;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\include;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\lib\intel64\vc14;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\include\tbb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,19 +145,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\buckets.cpp" />
+    <ClCompile Include="src\histogram.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\naive.cpp" />
     <ClCompile Include="src\parameters.cpp" />
     <ClCompile Include="src\percentile_finder.cpp" />
+    <ClCompile Include="src\smp_file_reader.cpp" />
     <ClCompile Include="src\state.cpp" />
+    <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\buckets.h" />
+    <ClInclude Include="src\histogram.h" />
     <ClInclude Include="src\naive.h" />
     <ClInclude Include="src\parameters.h" />
     <ClInclude Include="src\percentile_finder.h" />
+    <ClInclude Include="src\smp_file_reader.h" />
     <ClInclude Include="src\state.h" />
+    <ClInclude Include="src\test.h" />
     <ClInclude Include="src\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

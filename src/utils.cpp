@@ -15,5 +15,5 @@ bool utils::is_valid_double(double d) {
 
 size_t utils::get_file_size(std::ifstream *file) {
     file->seekg(0, std::ios::end);
-    return file->tellg();
+    return (size_t) file->tellg();
 }
