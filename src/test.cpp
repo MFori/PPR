@@ -4,10 +4,10 @@
  *
  * Author: Martin Forejt
  */
-#include <iostream>
 #include "test.h"
 #include "naive.h"
 #include "percentile_finder.h"
+#include "logging.h"
 
 void test_1(char *file_name) {
     for (int i = 1; i <= 100; i++) {
@@ -17,7 +17,7 @@ void test_1(char *file_name) {
         Result result{};
         run(file_name, i, ProcessorType::Single, nullptr, &result);
 
-        std::cout << "test (" << i << "), naive: " << naive << ", run: " << result.value
-         << "result: " << (naive == result.value ? "OK" : "FAILED") << std::endl;
+        LOG("test (" << i << "), naive: " << naive << ", run: " << result.value
+         << "result: " << (naive == result.value ? "OK" : "FAILED"));
     }
 }

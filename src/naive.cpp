@@ -9,6 +9,7 @@
 #include <vector>
 #include <algorithm>
 #include "naive.h"
+#include "logging.h"
 
 std::pair<long, long> find_percentile_naive(char *file_name, int percentile, double *value) {
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
@@ -25,8 +26,8 @@ std::pair<long, long> find_percentile_naive(char *file_name, int percentile, dou
         if (read < 1) break;
 
         for (int i = 0; i < read; i++) {
-            double value = ((double *) buffer.data())[i];
-            numbers.push_back(value);
+            double val = ((double *) buffer.data())[i];
+            numbers.push_back(val);
         }
     }
 
@@ -48,9 +49,9 @@ std::pair<long, long> find_percentile_naive(char *file_name, int percentile, dou
         if (read < 1) break;
 
         for (int i = 1; i < read; i++) {
-            double value = ((double *) buffer.data())[i];
+            double val = ((double *) buffer.data())[i];
 
-            if (value == percentile_value) {
+            if (val == percentile_value) {
                 if (first == -1) {
                     first = pos;
                 }
@@ -62,7 +63,7 @@ std::pair<long, long> find_percentile_naive(char *file_name, int percentile, dou
     }
 
     file.close();
-    std::cout << "naive:\n" << percentile_value << "\n" << first << "\n" << last << std::endl;
+    LOG_D("naive:\n" << percentile_value << "\n" << first << "\n" << last);
     *value = percentile_value;
     std::pair<long, long> res(first, last);
     return res;

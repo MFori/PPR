@@ -8,32 +8,33 @@
 #include "parameters.h"
 #include "buckets.h"
 #include "test.h"
+#include "logging.h"
 
 void help() {
-    std::cout << "Invalid program params, usage:" << std::endl;
-    std::cout << "pprsolver.exe file percentile processor" << std::endl;
-    std::cout << "\t file - file path" << std::endl;
-    std::cout << "\t percentile - number 1 - 100" << std::endl;
-    std::cout << "\t processor - \"single\" / \"SMP\" / OpenCL device name" << std::endl;
+    LOG("Invalid program params, usage:");
+    LOG("pprsolver.exe file percentile processor");
+    LOG("\t file - file path");
+    LOG("\t percentile - number 1 - 100");
+    LOG("\t processor - \"single\" / \"SMP\" / OpenCL device name");
 }
 
 void print_result(Result *result) {
-    std::cout << "Result found:" << std::endl;
-    std::cout << "- Percentile value: " << result->value << " (" << std::hexfloat << std::uppercase << result->value << ")" << std::endl;
-    std::cout << "- First position: " << std::hex << std::uppercase << result->first_pos << std::endl;
-    std::cout << "- Last position: " << std::hex << std::uppercase << result->last_pos << std::endl;
+    LOG("Result found:");
+    LOG("- Percentile value: " << result->value << " (" << std::hexfloat << std::uppercase << result->value << ")");
+    LOG("- First position: " << std::hex << std::uppercase << result->first_pos);
+    LOG("- Last position: " << std::hex << std::uppercase << result->last_pos);
 }
 
 int main(int argc, char *argv[]) {
-    std::cout << "Starting..." << std::endl;
+    LOG_D("Starting...");
     struct ProgramParams params{};
     if (parseParams(argc, argv, &params)) {
         help();
         return 0;
     }
 
-    std::cout << "Params parsed:\n- file: " << params.file_name << "\n- percentile: " << params.percentile
-              << "\n- processor type: " << (int) params.processor << std::endl;
+    LOG_D("Params parsed:\n- file: " << params.file_name << "\n- percentile: " << params.percentile
+              << "\n- processor type: " << (int) params.processor);
 
     //test_1(params.file_name);
     //return 0;
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
 
     print_result(&result);
 
-    std::cout << "Program end." << std::endl;
+    LOG_D("Program end.");
 
     return EXIT_SUCCESS;
 }

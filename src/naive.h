@@ -7,6 +7,8 @@
 #ifndef PPR_NAIVE_H
 #define PPR_NAIVE_H
 
+#include <vector>
+
 std::pair<long, long> find_percentile_naive(char *file_name, int percentile, double *value);
 
 #endif /* PPR_NAIVE_H */

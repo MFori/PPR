@@ -5,9 +5,9 @@
  * Author: Martin Forejt
  */
 #include <fstream>
-#include <iostream>
 #include "percentile_finder.h"
 #include "utils.h"
+#include "logging.h"
 #include "naive.h"
 
 void run(char *file_name, int percentile, ProcessorType processor_type, State *state, Result *result) {
@@ -30,16 +30,16 @@ void run(char *file_name, int percentile, ProcessorType processor_type, State *s
         if (step == 0) {
             histogram.percentile_position = get_percentile_position(percentile, histogram.total_values);
         }
-        std::cout << "total_values: " << histogram.total_values << std::endl;
+        LOG_D("total_values: " << histogram.total_values);
         bucket = find_bucket(buckets, &histogram);
         histogram.shrink(buckets, bucket.first, bucket.second);
 
-        std::cout << "total_values: " << histogram.total_values << std::endl;
-        std::cout << "bucket_index: " << bucket.first << std::endl;
-        std::cout << "min: " << *((double *) &histogram.value_min) << std::endl;
-        std::cout << "max: " << *((double *) &histogram.value_max) << std::endl;
-        std::cout << "range: " << histogram.range() << std::endl;
-        std::cout << "position: " << histogram.percentile_position << std::endl;
+        LOG_D("total_values: " << histogram.total_values);
+        LOG_D("bucket_index: " << bucket.first);
+        LOG_D("min: " << *((double *) &histogram.value_min));
+        LOG_D("max: " << *((double *) &histogram.value_max));
+        LOG_D("range: " << histogram.range());
+        LOG_D("position: " << histogram.percentile_position);
 
         if (buckets[bucket.first] <= MAX_BUCKET_ITEMS || histogram.range() <= 1 ||
             !histogram.can_shrink() || histogram.total_values == 0) {
