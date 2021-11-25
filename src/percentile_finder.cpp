@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "logging.h"
 #include "naive.h"
+#include "watchdog.h"
 
 void run(char *file_name, int percentile, ProcessorType processor_type, Result *result) {
     //double naive;
@@ -24,15 +25,18 @@ void run(char *file_name, int percentile, ProcessorType processor_type, Result *
     std::vector<long> buckets;
     std::pair<size_t, size_t> bucket;
 
-    int step = 0;
+    unsigned int step = 0;
     while (true) {
         buckets = create_buckets(&file, &histogram);
         if (step == 0) {
             histogram.percentile_position = get_percentile_position(percentile, histogram.total_values);
         }
+        Watchdog::kick();
         LOG_D("total_values: " << histogram.total_values);
         bucket = find_bucket(buckets, &histogram);
+        Watchdog::kick();
         histogram.shrink(buckets, bucket.first, bucket.second);
+        Watchdog::kick();
 
         LOG_D("total_values: " << histogram.total_values);
         LOG_D("bucket_index: " << bucket.first);
@@ -46,6 +50,7 @@ void run(char *file_name, int percentile, ProcessorType processor_type, Result *
             break;
         }
 
+        if (step >= MAX_STEPS) break;
         step++;
     }
 
@@ -55,8 +60,10 @@ void run(char *file_name, int percentile, ProcessorType processor_type, Result *
     } else {
         result->value = get_percentile_value(&file, &histogram);
     }
+    Watchdog::kick();
 
     auto positions = get_value_positions(&file, &histogram, result->value);
+    Watchdog::kick();
 
     file.close();
 

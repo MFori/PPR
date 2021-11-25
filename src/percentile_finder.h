@@ -9,6 +9,8 @@
 
 #include "buckets.h"
 
+const unsigned int MAX_STEPS = 10;
+
 struct Result {
     double value;
     long first_pos;

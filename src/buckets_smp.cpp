@@ -9,6 +9,7 @@
 #include <iostream>
 #include "buckets_smp.h"
 #include "utils.h"
+#include "watchdog.h"
 
 std::vector<long> create_buckets_smp(std::ifstream *file, Histogram *histogram) {
     std::vector<long> buckets(histogram->get_buckets_count());
@@ -103,6 +104,8 @@ std::pair<size_t, std::vector<double>> SMPFileReader::operator()(tbb::flow_contr
         fc.stop();
     }
 
+    Watchdog::kick();
+
     auto result_buffer = std::vector<double>(buffer.begin(), buffer.begin() + read);
     auto result = std::pair<size_t, std::vector<double>>(file_position, result_buffer);
     return result;
@@ -135,6 +138,8 @@ BucketChunk SMPBucketChunksCreator::operator()(const std::pair<size_t, const std
         chunk.file_max = file_position + (BUFFER_SIZE_NUMBERS * NUMBER_SIZE_BYTES);
     }
 
+    Watchdog::kick();
+
     chunk.buckets = buckets;
     return chunk;
 }
@@ -156,6 +161,8 @@ void SMPBucketsCreator::operator()(const BucketChunk &bucketChunk) const {
             buckets->begin(),
             std::plus<>()
     );
+
+    Watchdog::kick();
 }
 
 std::vector<double> SMPValuesExtractor::operator()(const std::pair<size_t, const std::vector<double>> &params) const {
@@ -168,6 +175,8 @@ std::vector<double> SMPValuesExtractor::operator()(const std::pair<size_t, const
         if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
         values.push_back(value);
     }
+
+    Watchdog::kick();
 
     return values;
 }
@@ -194,6 +203,7 @@ SMPPositionsExtractor::operator()(const std::pair<size_t, const std::vector<doub
         }
     }
 
+    Watchdog::kick();
     auto positions = std::pair<size_t, size_t>(first_position, last_position);
     return positions;
 }

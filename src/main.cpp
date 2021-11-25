@@ -11,7 +11,7 @@
 #include "logging.h"
 #include "watchdog.h"
 
-const unsigned int WATCHDOG_TIMEOUT_S = 2;
+const unsigned int WATCHDOG_TIMEOUT_S = 10;
 
 void help() {
     LOG("Invalid program params, usage:");
@@ -33,21 +33,20 @@ int main(int argc, char *argv[]) {
     struct ProgramParams params{};
     if (parseParams(argc, argv, &params)) {
         help();
-        return 0;
+        return EXIT_SUCCESS;
     }
 
-    LOG_D("Params parsed:\n- file: " << params.file_name << "\n- percentile: " << params.percentile
-                                     << "\n- processor type: " << (int) params.processor);
+    LOG_D("Params parsed:\n- file: "
+                  << params.file_name
+                  << "\n- percentile: " << params.percentile
+                  << "\n- processor type: " << (int) params.processor);
 
     //test_1(params.file_name);
     //return 0;
 
-    std::mutex mutex;
-    std::unique_lock<std::mutex> lock(mutex);
-
     Watchdog::start(WATCHDOG_TIMEOUT_S, [] {
-        LOG("test watchdog");
-        exit(1);
+        LOG("Watchdog bite. Killing app...");
+        exit(EXIT_FAILURE);
     });
 
     struct Result result{};

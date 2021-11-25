@@ -5,9 +5,9 @@
  * Author: Martin Forejt
  */
 #include <algorithm>
-#include <iostream>
 #include "buckets_single.h"
 #include "utils.h"
+#include "watchdog.h"
 
 // create buckets, return buckets
 std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogram) {
@@ -27,6 +27,7 @@ std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogra
         file->read((char *) buffer.data(), buffer_size_bytes);
         auto read = file->gcount() / NUMBER_SIZE_BYTES;
         if (read < 1) break;
+        Watchdog::kick();
 
         bool had_valid = false;
         for (int i = 0; i < read; i++) {
@@ -39,6 +40,7 @@ std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogra
             had_valid = true;
         }
 
+        Watchdog::kick();
         if (had_valid && file_min == 0) {
             file_min = file_position;
         }
@@ -66,6 +68,7 @@ double get_percentile_value_single(std::ifstream *file, Histogram *histogram) {
         file->read((char *) buffer.data(), buffer_size_bytes);
         auto read = file->gcount() / NUMBER_SIZE_BYTES;
         if (read < 1) break;
+        Watchdog::kick();
 
         for (int i = 0; i < read; i++) {
             auto value = buffer.at(i);
@@ -73,6 +76,7 @@ double get_percentile_value_single(std::ifstream *file, Histogram *histogram) {
             values.push_back(value);
         }
 
+        Watchdog::kick();
         size_t file_position = file->tellg();
         if (file_position >= histogram->file_max) break;
     }
@@ -97,6 +101,7 @@ std::pair<size_t, size_t> get_value_positions_single(std::ifstream *file, Histog
         file->read((char *) buffer.data(), buffer_size_bytes);
         auto read = file->gcount() / NUMBER_SIZE_BYTES;
         if (read < 1) break;
+        Watchdog::kick();
 
         for (int i = 0; i < read; i++) {
             auto val = buffer.at(i);
@@ -108,6 +113,7 @@ std::pair<size_t, size_t> get_value_positions_single(std::ifstream *file, Histog
             }
         }
 
+        Watchdog::kick();
         if (file_position >= histogram->file_max) break;
     }
 
