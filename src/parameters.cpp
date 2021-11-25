@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include "parameters.h"
+#include "logging.h"
 
 int parseParams(int argc, char *argv[], ProgramParams *params) {
     std::cout << "Parsing program params...\n";
@@ -21,6 +22,7 @@ int parseParams(int argc, char *argv[], ProgramParams *params) {
     bool file_good = file.good();
     file.close();
     if (!file_good) {
+        LOG("Cannot open file " << file_name);
         return -1;
     }
     params->file_name = argv[1];
