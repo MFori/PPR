@@ -11,6 +11,7 @@
 
 // create buckets, return buckets
 std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogram) {
+    bool has_file_min = false;
     size_t file_min = 0;
     size_t file_max = histogram->file_max;
 
@@ -41,7 +42,8 @@ std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogra
         }
 
         Watchdog::kick();
-        if (had_valid && file_min == 0) {
+        if (had_valid && !has_file_min) {
+            has_file_min = true;
             file_min = file_position;
         }
         file_position = file->tellg();
@@ -82,7 +84,6 @@ double get_percentile_value_single(std::ifstream *file, Histogram *histogram) {
     }
 
     std::sort(values.begin(), values.end());
-    if (histogram->percentile_position >= values.size()) histogram->percentile_position = values.size() - 1;
     return values[histogram->percentile_position];
 }
 
@@ -93,6 +94,7 @@ std::pair<size_t, size_t> get_value_positions_single(std::ifstream *file, Histog
     file->clear();
     file->seekg(histogram->file_min);
 
+    bool has_first_position = false;
     size_t first_position = 0;
     size_t last_position = 0;
 
@@ -106,7 +108,8 @@ std::pair<size_t, size_t> get_value_positions_single(std::ifstream *file, Histog
         for (int i = 0; i < read; i++) {
             auto val = buffer.at(i);
             if (val == value) {
-                if (first_position == 0) {
+                if (!has_first_position) {
+                    has_first_position = true;
                     first_position = file_position + i * NUMBER_SIZE_BYTES;
                 }
                 last_position = file_position + i * NUMBER_SIZE_BYTES;

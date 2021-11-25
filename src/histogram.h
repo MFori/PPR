@@ -9,12 +9,13 @@
 
 #include <fstream>
 
-const int BUFFER_SIZE_NUMBERS = 50000;
+const int MEMORY_LIMIT = 200 * 1024 * 1024; // 200MB in bytes
+const int BUFFER_SIZE_NUMBERS = 100000;
 
 const int NUMBER_SIZE_BYTES = 8;
 const int NUMBER_SIZE_BITS = 8 * 8;
 
-const int BUCKET_STEP_BITS = 4;
+const int BUCKET_STEP_BITS = 8;
 const int BUCKET_BITS_START = 16;
 const int BUCKET_BITS_MAX = 48;
 const unsigned long SUB_BUCKETS_COUNT = (unsigned long) pow(2, BUCKET_STEP_BITS);

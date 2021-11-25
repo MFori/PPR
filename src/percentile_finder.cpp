@@ -12,8 +12,8 @@
 #include "watchdog.h"
 
 void run(char *file_name, int percentile, ProcessorType processor_type, Result *result) {
-    //double naive;
-    //find_percentile_naive(file_name, percentile, &naive);
+    double naive;
+    find_percentile_naive(file_name, percentile, &naive);
 
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
 

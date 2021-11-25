@@ -10,6 +10,8 @@
 #include <algorithm>
 #include "naive.h"
 #include "logging.h"
+#include "histogram.h"
+#include "utils.h"
 
 std::pair<long, long> find_percentile_naive(char *file_name, int percentile, double *value) {
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
@@ -17,23 +19,28 @@ std::pair<long, long> find_percentile_naive(char *file_name, int percentile, dou
         std::pair<long, long> res(0, 0);
         return res;
     }
-    std::vector<char> buffer(8000);
+    std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
+    size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
+    file.clear();
+    file.seekg(0);
 
     std::vector<double> numbers;
     while (true) {
-        file.read(buffer.data(), buffer.size());
-        auto read = file.gcount() / 8;
+        file.read((char *) buffer.data(), buffer_size_bytes);
+        auto read = file.gcount() / NUMBER_SIZE_BYTES;
         if (read < 1) break;
 
         for (int i = 0; i < read; i++) {
-            double val = ((double *) buffer.data())[i];
+            auto val = buffer.at(i);
+            if (!utils::is_valid_double(val)) continue;
             numbers.push_back(val);
         }
     }
 
     std::sort(numbers.begin(), numbers.end());
-    long n = (long) (((float) percentile / 100) * numbers.size());
+    long n = (long) (((double) percentile / 100) * numbers.size());
     if (percentile == 100) n = (long) (numbers.size() - 1);
+    std::cout << "naive position: " << n << ", " << numbers.size() << std::endl;
     double percentile_value = numbers.at(n);
 
     file.clear();
@@ -44,12 +51,12 @@ std::pair<long, long> find_percentile_naive(char *file_name, int percentile, dou
     long pos = 0;
 
     while (true) {
-        file.read(buffer.data(), buffer.size());
-        auto read = file.gcount() / 8;
+        file.read((char*) buffer.data(), buffer_size_bytes);
+        auto read = file.gcount() / NUMBER_SIZE_BYTES;
         if (read < 1) break;
 
         for (int i = 1; i < read; i++) {
-            double val = ((double *) buffer.data())[i];
+            auto val = buffer.at(i);
 
             if (val == percentile_value) {
                 if (first == -1) {

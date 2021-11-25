@@ -37,8 +37,7 @@ unsigned long Histogram::get_buckets_count() const {
 }
 
 void Histogram::shrink_histogram(size_t bucket_index) {
-    auto min_content = *((unsigned long long *) &value_min);
-    min_index = min_content >> bucket_shift;
+    min_index = value_min >> bucket_shift;
     bucket_index += min_index;
 
     auto content = *((unsigned long long *) &bucket_index);
@@ -53,6 +52,5 @@ void Histogram::shrink_histogram(size_t bucket_index) {
     bucket_shift = NUMBER_SIZE_BITS - bucket_bits;
     buckets_count = SUB_BUCKETS_COUNT;
 
-    min_content = *((unsigned long long *) &value_min);
-    min_index = min_content >> bucket_shift;
+    min_index = value_min >> bucket_shift;
 }
