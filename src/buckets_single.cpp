@@ -10,7 +10,7 @@
 #include "utils.h"
 
 // create buckets, return buckets
-std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogram, State *state) {
+std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogram) {
     size_t file_min = 0;
     size_t file_max = histogram->file_max;
 

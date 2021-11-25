@@ -15,7 +15,7 @@ void test_1(char *file_name) {
         auto limits = find_percentile_naive(file_name, i, &naive);
 
         Result result{};
-        run(file_name, i, ProcessorType::Single, nullptr, &result);
+        run(file_name, i, ProcessorType::Single, &result);
 
         LOG("test (" << i << "), naive: " << naive << ", run: " << result.value
          << "result: " << (naive == result.value ? "OK" : "FAILED"));

@@ -11,7 +11,7 @@
 #include "histogram.h"
 
 // create buckets, return buckets
-std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogram, State *state);
+std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogram);
 
 double get_percentile_value_single(std::ifstream *file, Histogram *histogram);
 

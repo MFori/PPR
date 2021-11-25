@@ -8,7 +8,6 @@
 #define PPR_HISTOGRAM_H
 
 #include <fstream>
-#include "state.h"
 
 const int BUFFER_SIZE_NUMBERS = 50000;
 
@@ -32,7 +31,7 @@ public:
     size_t file_max = 0;
     size_t percentile_position = 0;
 
-    Histogram(State *state) : state(state) {}
+    Histogram() {};
 
     bool contains(double value) const;
 
@@ -52,7 +51,6 @@ private:
     unsigned int bucket_shift = NUMBER_SIZE_BITS - bucket_bits;
     unsigned long long min_index = 0;
     unsigned long buckets_count = (unsigned long) pow(2, bucket_bits);
-    State *state;
 
     void shrink_histogram(size_t bucket_index);
 };

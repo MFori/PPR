@@ -22,14 +22,14 @@ long get_percentile_position(int percentile, size_t total_values) {
     return (long) (((double) percentile / 100.0) * total_values);
 }
 
-std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram, State *state) {
+std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram) {
     if(buckets_proc_type == ProcessorType::OpenCL) {
         // todo openCl
-        return create_buckets_smp(file, histogram, state);
+        return create_buckets_smp(file, histogram);
     } else if(buckets_proc_type == ProcessorType::SMP) {
-        return create_buckets_smp(file, histogram, state);
+        return create_buckets_smp(file, histogram);
     } else {
-        return create_buckets_single(file, histogram, state);
+        return create_buckets_single(file, histogram);
     }
 }
 

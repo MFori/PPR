@@ -21,7 +21,7 @@ void set_processor_type(ProcessorType processor_type);
 long get_percentile_position(int percentile, size_t total_values);
 
 // create buckets, return buckets
-std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram, State *state);
+std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram);
 
 // find bucket with percentile, return bucket index
 std::pair<size_t, size_t> find_bucket(const std::vector<long> &buckets, Histogram *histogram);

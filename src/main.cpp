@@ -9,6 +9,9 @@
 #include "buckets.h"
 #include "test.h"
 #include "logging.h"
+#include "watchdog.h"
+
+const unsigned int WATCHDOG_TIMEOUT_S = 2;
 
 void help() {
     LOG("Invalid program params, usage:");
@@ -34,15 +37,23 @@ int main(int argc, char *argv[]) {
     }
 
     LOG_D("Params parsed:\n- file: " << params.file_name << "\n- percentile: " << params.percentile
-              << "\n- processor type: " << (int) params.processor);
+                                     << "\n- processor type: " << (int) params.processor);
 
     //test_1(params.file_name);
     //return 0;
 
-    auto state = State();
-    // TODO init watchdog
+    std::mutex mutex;
+    std::unique_lock<std::mutex> lock(mutex);
+
+    Watchdog::start(WATCHDOG_TIMEOUT_S, [] {
+        LOG("test watchdog");
+        exit(1);
+    });
+
     struct Result result{};
-    run(params.file_name, params.percentile, params.processor, &state, &result);
+    run(params.file_name, params.percentile, params.processor, &result);
+
+    Watchdog::stop();
 
     print_result(&result);
 

@@ -10,13 +10,13 @@
 #include "logging.h"
 #include "naive.h"
 
-void run(char *file_name, int percentile, ProcessorType processor_type, State *state, Result *result) {
+void run(char *file_name, int percentile, ProcessorType processor_type, Result *result) {
     //double naive;
     //find_percentile_naive(file_name, percentile, &naive);
 
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
 
-    Histogram histogram(state);
+    Histogram histogram;
     auto file_size = utils::get_file_size(&file);
     histogram.file_max = file_size;
     set_processor_type(processor_type);
@@ -26,7 +26,7 @@ void run(char *file_name, int percentile, ProcessorType processor_type, State *s
 
     int step = 0;
     while (true) {
-        buckets = create_buckets(&file, &histogram, state);
+        buckets = create_buckets(&file, &histogram);
         if (step == 0) {
             histogram.percentile_position = get_percentile_position(percentile, histogram.total_values);
         }

@@ -10,7 +10,7 @@
 #include "buckets_smp.h"
 #include "utils.h"
 
-std::vector<long> create_buckets_smp(std::ifstream *file, Histogram *histogram, State *state) {
+std::vector<long> create_buckets_smp(std::ifstream *file, Histogram *histogram) {
     std::vector<long> buckets(histogram->get_buckets_count());
     size_t file_min = 0;
     size_t file_max = 0;

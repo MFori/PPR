@@ -7,7 +7,6 @@
 #ifndef PPR_PERCENTILE_FINDER_H
 #define PPR_PERCENTILE_FINDER_H
 
-#include "state.h"
 #include "buckets.h"
 
 struct Result {
@@ -16,6 +15,6 @@ struct Result {
     long last_pos;
 };
 
-void run(char *file_name, int percentile, ProcessorType processor_type, State *state, Result *result);
+void run(char *file_name, int percentile, ProcessorType processor_type, Result *result);
 
 #endif /* PPR_PERCENTILE_FINDER_H */
