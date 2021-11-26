@@ -36,5 +36,8 @@ add_executable(PPR
         src/buckets_smp.h
         src/logging.h
         src/watchdog.cpp
-        src/watchdog.h src/buckets_cl.cpp src/buckets_cl.h)
+        src/watchdog.h
+        src/buckets_cl.cpp
+        src/buckets_cl.h
+        src/cl_lib.h)
 
