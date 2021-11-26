@@ -9,6 +9,7 @@
 #include <iostream>
 #include "parameters.h"
 #include "logging.h"
+#include "utils.h"
 
 int parseParams(int argc, char *argv[], ProgramParams *params) {
     std::cout << "Parsing program params...\n";
@@ -41,7 +42,17 @@ int parseParams(int argc, char *argv[], ProgramParams *params) {
     } else if (strcmp(argv[3], "SMP") == 0) {
         params->processor = ProcessorType::SMP;
     } else {
-        // TODO check if OpenCL device available
+        params->processor = ProcessorType::OpenCL;
+        if (!utils::has_cl_device(argv[3])) {
+            LOG("OpenCL device \"" << argv[3] << "\" not found. Available devices: ");
+            auto devices = utils::get_cl_devices();
+            for (const auto &device : devices) {
+                LOG(" - " << device);
+            }
+            return -1;
+        } else {
+            params->cl_device = argv[3];
+        }
     }
 
     return 0;

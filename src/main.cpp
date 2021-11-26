@@ -39,7 +39,8 @@ int main(int argc, char *argv[]) {
     LOG_D("Params parsed:\n- file: "
                   << params.file_name
                   << "\n- percentile: " << params.percentile
-                  << "\n- processor type: " << (int) params.processor);
+                  << "\n- processor type: " << (int) params.processor
+                  << "\n- OpenCl device: " << (params.processor == ProcessorType::OpenCL ? params.cl_device : "-"));
 
     //test_1(params.file_name);
     //return 0;

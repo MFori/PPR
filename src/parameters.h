@@ -11,6 +11,7 @@
 
 struct ProgramParams {
     char *file_name;
+    char *cl_device;
     int percentile;
     ProcessorType processor;
 };
