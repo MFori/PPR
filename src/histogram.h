@@ -9,8 +9,8 @@
 
 #include <fstream>
 
-const int MEMORY_LIMIT = 200 * 1024 * 1024; // 200MB in bytes
-const int BUFFER_SIZE_NUMBERS = 100000;
+const unsigned int MEMORY_LIMIT = 200 * 1024 * 1024; // 200MB in bytes
+const int BUFFER_SIZE_NUMBERS = 80000;
 
 const int NUMBER_SIZE_BYTES = 8;
 const int NUMBER_SIZE_BITS = 8 * 8;

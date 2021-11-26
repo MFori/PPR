@@ -6,17 +6,23 @@
  */
 #include <algorithm>
 #include <tbb/parallel_pipeline.h>
-#include <iostream>
 #include "buckets_smp.h"
 #include "utils.h"
 #include "watchdog.h"
+
+unsigned int max_live_tokens() {
+    unsigned int n_cores = std::thread::hardware_concurrency();
+    auto max_threads = (MEMORY_LIMIT / (BUFFER_SIZE_NUMBERS * NUMBER_SIZE_BYTES * 3));
+    auto max_live_tokens = std::min(n_cores, max_threads);
+    return max_live_tokens;
+}
 
 std::vector<long> create_buckets_smp(std::ifstream *file, Histogram *histogram) {
     std::vector<long> buckets(histogram->get_buckets_count());
     size_t file_min = 0;
     size_t file_max = 0;
 
-    tbb::parallel_pipeline(MAX_LIVE_TOKENS,
+    tbb::parallel_pipeline(max_live_tokens(),
                            tbb::make_filter<void, std::pair<size_t, std::vector<double>>>(
                                    tbb::filter_mode::serial_in_order, SMPFileReader(file, histogram)
                            )
@@ -40,7 +46,7 @@ std::vector<long> create_buckets_smp(std::ifstream *file, Histogram *histogram) 
 double get_percentile_value_smp(std::ifstream *file, Histogram *histogram) {
     std::vector<double> values;
 
-    tbb::parallel_pipeline(MAX_LIVE_TOKENS,
+    tbb::parallel_pipeline(max_live_tokens(),
                            tbb::make_filter<void, std::pair<size_t, std::vector<double>>>(
                                    tbb::filter_mode::serial_in_order, SMPFileReader(file, histogram)
                            )
@@ -64,7 +70,7 @@ std::pair<size_t, size_t> get_value_positions_smp(std::ifstream *file, Histogram
     size_t first_position = 0;
     size_t last_position = 0;
 
-    tbb::parallel_pipeline(MAX_LIVE_TOKENS,
+    tbb::parallel_pipeline(max_live_tokens(),
                            tbb::make_filter<void, std::pair<size_t, std::vector<double>>>(
                                    tbb::filter_mode::serial_in_order, SMPFileReader(file, histogram)
                            )

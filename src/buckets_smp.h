@@ -12,8 +12,6 @@
 #include <fstream>
 #include <tbb/flow_graph.h>
 
-const unsigned int MAX_LIVE_TOKENS = 4;
-
 std::vector<long> create_buckets_smp(std::ifstream *file, Histogram *histogram);
 
 double get_percentile_value_smp(std::ifstream *file, Histogram *histogram);
