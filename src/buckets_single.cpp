@@ -5,6 +5,7 @@
  * Author: Martin Forejt
  */
 #include <algorithm>
+#include <set>
 #include "buckets_single.h"
 #include "utils.h"
 #include "watchdog.h"
@@ -59,7 +60,7 @@ std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogra
 }
 
 double get_percentile_value_single(std::ifstream *file, Histogram *histogram) {
-    std::vector<double> values;
+    std::multiset<double> values;
     std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
     size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
 
@@ -75,7 +76,7 @@ double get_percentile_value_single(std::ifstream *file, Histogram *histogram) {
         for (int i = 0; i < read; i++) {
             auto value = buffer.at(i);
             if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
-            values.push_back(value);
+            values.insert(value);
         }
 
         Watchdog::kick();
@@ -83,8 +84,9 @@ double get_percentile_value_single(std::ifstream *file, Histogram *histogram) {
         if (file_position >= histogram->file_max) break;
     }
 
-    std::sort(values.begin(), values.end());
-    return values[histogram->percentile_position];
+    return *std::next(values.begin(), histogram->percentile_position);
+    //std::sort(values.begin(), values.end());
+    //return values[histogram->percentile_position];
 }
 
 std::pair<size_t, size_t> get_value_positions_single(std::ifstream *file, Histogram *histogram, double value) {
