@@ -39,9 +39,7 @@ std::vector<std::string> utils::get_cl_devices() {
         std::vector<cl::Device> devices;
         platform.getDevices(CL_DEVICE_TYPE_GPU, &devices);
         for (auto &device : devices) {
-            char device_name[100];
-            device.getInfo(CL_DEVICE_NAME, &device_name);
-            devices_names.emplace_back(device_name);
+            devices_names.emplace_back(device.getInfo<CL_DEVICE_NAME>().c_str());
         }
     }
 
