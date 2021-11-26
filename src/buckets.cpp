@@ -8,6 +8,7 @@
 #include <vector>
 #include "buckets_single.h"
 #include "buckets_smp.h"
+#include "buckets_cl.h"
 
 ProcessorType buckets_proc_type;
 
@@ -23,8 +24,7 @@ long get_percentile_position(int percentile, size_t total_values) {
 
 std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram) {
     if(buckets_proc_type == ProcessorType::OpenCL) {
-        // todo openCl
-        return create_buckets_smp(file, histogram);
+        return create_buckets_cl(file, histogram);
     } else if(buckets_proc_type == ProcessorType::SMP) {
         return create_buckets_smp(file, histogram);
     } else {
@@ -62,8 +62,7 @@ std::pair<size_t, size_t> find_bucket(const std::vector<long> &buckets, Histogra
 
 double get_percentile_value(std::ifstream *file, Histogram *histogram) {
     if(buckets_proc_type == ProcessorType::OpenCL) {
-        // todo openCl
-        return get_percentile_value_smp(file, histogram);
+        return get_percentile_value_cl(file, histogram);
     } else if(buckets_proc_type == ProcessorType::SMP) {
         return get_percentile_value_smp(file, histogram);
     } else {
@@ -73,8 +72,7 @@ double get_percentile_value(std::ifstream *file, Histogram *histogram) {
 
 std::pair<size_t, size_t> get_value_positions(std::ifstream *file, Histogram *histogram, double value) {
     if(buckets_proc_type == ProcessorType::OpenCL) {
-        // todo openCl
-        return get_value_positions_smp(file, histogram, value);
+        return get_value_positions_cl(file, histogram, value);
     } else if(buckets_proc_type == ProcessorType::SMP) {
         return get_value_positions_smp(file, histogram, value);
     } else {

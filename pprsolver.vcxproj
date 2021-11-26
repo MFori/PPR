@@ -155,18 +155,21 @@
     <ClCompile Include="src\state.cpp" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\utils.cpp" />
+    <ClCompile Include="src\watchdog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\buckets.h" />
     <ClInclude Include="src\buckets_single.h" />
     <ClInclude Include="src\buckets_smp.h" />
     <ClInclude Include="src\histogram.h" />
+    <ClInclude Include="src\logging.h" />
     <ClInclude Include="src\naive.h" />
     <ClInclude Include="src\parameters.h" />
     <ClInclude Include="src\percentile_finder.h" />
     <ClInclude Include="src\state.h" />
     <ClInclude Include="src\test.h" />
     <ClInclude Include="src\utils.h" />
+    <ClInclude Include="src\watchdog.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
