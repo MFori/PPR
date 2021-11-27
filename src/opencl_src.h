@@ -14,12 +14,13 @@
 
 const std::string cl_program_src = R"CLC(
 
+    __constant const ulong d_exp = 0x7FF0000000000000;
+    __constant const ulong p_zero = 0x0000000000000000;
+    __constant const ulong n_zero = 0x8000000000000000;
+
     bool valid_double(ulong value) {
-        const ulong exp = 0x7FF0000000000000;
-        const ulong p_zero = 0x0000000000000000;
-        const ulong n_zero = 0x8000000000000000;
-        bool inf_or_nan = (value & exp) == exp;
-        bool sub_or_zero = (~value & exp) == exp;
+        bool inf_or_nan = (value & d_exp) == d_exp;
+        bool sub_or_zero = (~value & d_exp) == d_exp;
         bool zero = value == p_zero || value == n_zero;
 
         bool normal = (!inf_or_nan && !sub_or_zero) || zero;
