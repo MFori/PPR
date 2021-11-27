@@ -44,7 +44,7 @@ std::vector<long> create_buckets_smp(std::ifstream *file, Histogram *histogram) 
 }
 
 double get_percentile_value_smp(std::ifstream *file, Histogram *histogram) {
-    std::vector<double> values;
+    std::map<double, size_t> values;
 
     tbb::parallel_pipeline(max_live_tokens(),
                            tbb::make_filter<void, std::pair<size_t, std::vector<double>>>(
@@ -61,9 +61,15 @@ double get_percentile_value_smp(std::ifstream *file, Histogram *histogram) {
                            )
     );
 
-    std::sort(values.begin(), values.end());
-    if (histogram->percentile_position >= values.size()) histogram->percentile_position = values.size() - 1;
-    return values[histogram->percentile_position];
+    size_t sum = 0;
+    for(auto it = values.begin(); it != values.end(); it++) {
+        sum += it->second;
+        if(sum > histogram->percentile_position) {
+            return it->first;
+        }
+    }
+
+    return 0;
 }
 
 std::pair<size_t, size_t> get_value_positions_smp(std::ifstream *file, Histogram *histogram, double value) {
@@ -151,7 +157,7 @@ BucketChunk SMPBucketChunksCreator::operator()(const std::pair<size_t, const std
 void SMPBucketsCreator::operator()(const BucketChunk &bucketChunk) const {
     histogram->total_values += bucketChunk.total_values;
 
-    if (bucketChunk.had_valid && (bucketChunk.file_min < *file_min || !has_min_val)) {
+    if (bucketChunk.had_valid && (bucketChunk.file_min < *file_min || !*has_min)) {
         *has_min = true;
         *file_min = bucketChunk.file_min;
     }
@@ -187,7 +193,14 @@ std::vector<double> SMPValuesExtractor::operator()(const std::pair<size_t, const
 }
 
 void SMPPercentileFinder::operator()(const std::vector<double> &values) const {
-    m_values->insert(m_values->end(), values.begin(), values.end());
+    for (auto value : values) {
+        auto it = m_values->find(value);
+        if (it != m_values->end()) {
+            it->second++;
+        } else {
+            m_values->insert(std::make_pair(value, 1));
+        }
+    }
 }
 
 PositionsResult SMPPositionsExtractor::operator()(const std::pair<size_t, const std::vector<double>> &params) const {
@@ -216,8 +229,9 @@ PositionsResult SMPPositionsExtractor::operator()(const std::pair<size_t, const 
 }
 
 void SMPPositionsFinder::operator()(const PositionsResult &position) const {
-    if (position.has_first && (position.first < *first_position || *first_position == 0)) {
+    if (position.has_first && (position.first < *first_position || !*has_first == 0)) {
         *first_position = position.first;
+        *has_first = true;
     }
     if (position.last > *last_position) {
         *last_position = position.last;

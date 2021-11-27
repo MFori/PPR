@@ -43,9 +43,10 @@ void test_1(char *file_name) {
 
 void create_test_file(char *file_name) {
     std::ofstream file(file_name, std::ifstream::out | std::ifstream::binary);
-    for (double i = 0.0; i <= 1.0;) {
-        file.write((char *) &i, sizeof(double));
-        i += 0.01;
+    double val = 69;
+    for (int i = 0; i <= 1000000;) {
+        file.write((char *) &val, sizeof(double));
+        i += 1;
     }
     file.close();
 }

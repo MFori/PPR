@@ -41,7 +41,7 @@ void run(char *file_name, int percentile, ProcessorType processor_type, char *cl
         LOG_D("max: " << *((double *) &histogram.value_max));
         LOG_D("position: " << histogram.percentile_position);
 
-        if (buckets[bucket.first] <= MAX_BUCKET_ITEMS || histogram.range() <= 1 ||
+        if (buckets[bucket.first] <= MAX_BUCKET_ITEMS || histogram.range() == 0 ||
             !histogram.can_shrink() || histogram.total_values == 0) {
             break;
         }
@@ -50,7 +50,7 @@ void run(char *file_name, int percentile, ProcessorType processor_type, char *cl
         step++;
     }
 
-    if (histogram.range() <= 0 || histogram.total_values == 0) {
+    if (histogram.range() == 0 || histogram.total_values == 0) {
         // if histogram min=max take one of them as result value
         result->value = *((double *) &histogram.value_min);
     } else {

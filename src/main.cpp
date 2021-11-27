@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
                   << "\n- OpenCl device: " << (params.processor == ProcessorType::OpenCL ? params.cl_device : "-"));
 
     //test_1(params.file_name);
-    //create_test_file("test_3.test");
+    //create_test_file("test_4.test");
     //return 0;
 
     Watchdog::start(WATCHDOG_TIMEOUT_S, [] {

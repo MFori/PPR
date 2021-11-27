@@ -6,7 +6,6 @@
  */
 #include "buckets.h"
 #include <vector>
-#include <iostream>
 #include "buckets_single.h"
 #include "buckets_smp.h"
 #include "buckets_cl.h"

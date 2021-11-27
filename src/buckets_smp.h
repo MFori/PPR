@@ -11,6 +11,7 @@
 #include "histogram.h"
 #include <fstream>
 #include <tbb/flow_graph.h>
+#include <map>
 
 std::vector<long> create_buckets_smp(std::ifstream *file, Histogram *histogram);
 
@@ -79,12 +80,12 @@ private:
 
 class SMPPercentileFinder {
 public:
-    SMPPercentileFinder(std::vector<double> *values) : m_values(values) {};
+    SMPPercentileFinder(std::map<double, size_t> *values) : m_values(values) {};
 
     void operator()(const std::vector<double> &values) const;
 
 private:
-    std::vector<double> *m_values;
+    std::map<double, size_t> *m_values;
 };
 
 struct PositionsResult {
@@ -113,6 +114,8 @@ public:
 private:
     size_t *first_position;
     size_t *last_position;
+    bool has_first_val = false;
+    bool *has_first = &has_first_val;
 };
 
 #endif /* PPR_BUCKETS_SMP_H */
