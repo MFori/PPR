@@ -145,6 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\buckets.cpp" />
+    <ClCompile Include="src\buckets_cl.cpp" />
     <ClCompile Include="src\buckets_single.cpp" />
     <ClCompile Include="src\buckets_smp.cpp" />
     <ClCompile Include="src\histogram.cpp" />
@@ -159,11 +160,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\buckets.h" />
+    <ClInclude Include="src\buckets_cl.h" />
     <ClInclude Include="src\buckets_single.h" />
     <ClInclude Include="src\buckets_smp.h" />
+    <ClInclude Include="src\cl_lib.h" />
     <ClInclude Include="src\histogram.h" />
     <ClInclude Include="src\logging.h" />
     <ClInclude Include="src\naive.h" />
+    <ClInclude Include="src\opencl_src.h" />
     <ClInclude Include="src\parameters.h" />
     <ClInclude Include="src\percentile_finder.h" />
     <ClInclude Include="src\state.h" />
