@@ -16,7 +16,9 @@ enum class ProcessorType {
     OpenCL
 };
 
-void set_processor_type(ProcessorType processor_type);
+void set_processor_type(ProcessorType processor_type, char *cl_device);
+
+void clear_bucketing();
 
 long get_percentile_position(int percentile, size_t total_values);
 

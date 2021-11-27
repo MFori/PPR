@@ -12,10 +12,18 @@
 
 ProcessorType buckets_proc_type;
 
-void set_processor_type(ProcessorType processor_type) {
+void set_processor_type(ProcessorType processor_type, char *cl_device) {
     buckets_proc_type = processor_type;
+    if (processor_type == ProcessorType::OpenCL) {
+        init_cl(cl_device);
+    }
 }
 
+void clear_bucketing() {
+    if (buckets_proc_type == ProcessorType::OpenCL) {
+        clear_bucketing_cl();
+    }
+}
 
 long get_percentile_position(int percentile, size_t total_values) {
     if (percentile == 100) return (long) (total_values - 1);
@@ -23,9 +31,9 @@ long get_percentile_position(int percentile, size_t total_values) {
 }
 
 std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram) {
-    if(buckets_proc_type == ProcessorType::OpenCL) {
+    if (buckets_proc_type == ProcessorType::OpenCL) {
         return create_buckets_cl(file, histogram);
-    } else if(buckets_proc_type == ProcessorType::SMP) {
+    } else if (buckets_proc_type == ProcessorType::SMP) {
         return create_buckets_smp(file, histogram);
     } else {
         return create_buckets_single(file, histogram);
@@ -61,9 +69,9 @@ std::pair<size_t, size_t> find_bucket(const std::vector<long> &buckets, Histogra
 }
 
 double get_percentile_value(std::ifstream *file, Histogram *histogram) {
-    if(buckets_proc_type == ProcessorType::OpenCL) {
+    if (buckets_proc_type == ProcessorType::OpenCL) {
         return get_percentile_value_cl(file, histogram);
-    } else if(buckets_proc_type == ProcessorType::SMP) {
+    } else if (buckets_proc_type == ProcessorType::SMP) {
         return get_percentile_value_smp(file, histogram);
     } else {
         return get_percentile_value_single(file, histogram);
@@ -71,9 +79,9 @@ double get_percentile_value(std::ifstream *file, Histogram *histogram) {
 }
 
 std::pair<size_t, size_t> get_value_positions(std::ifstream *file, Histogram *histogram, double value) {
-    if(buckets_proc_type == ProcessorType::OpenCL) {
+    if (buckets_proc_type == ProcessorType::OpenCL) {
         return get_value_positions_cl(file, histogram, value);
-    } else if(buckets_proc_type == ProcessorType::SMP) {
+    } else if (buckets_proc_type == ProcessorType::SMP) {
         return get_value_positions_smp(file, histogram, value);
     } else {
         return get_value_positions_single(file, histogram, value);

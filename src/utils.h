@@ -9,6 +9,8 @@
 
 #include <fstream>
 #include <vector>
+#include <optional>
+#include "cl_lib.h"
 
 namespace utils {
 
@@ -17,6 +19,8 @@ namespace utils {
     size_t get_file_size(std::ifstream *file);
 
     bool has_cl_device(char *name);
+
+    cl::Device get_cl_device(char *name);
 
     std::vector<std::string> get_cl_devices();
 }

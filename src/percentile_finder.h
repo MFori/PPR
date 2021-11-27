@@ -17,6 +17,6 @@ struct Result {
     long last_pos;
 };
 
-void run(char *file_name, int percentile, ProcessorType processor_type, Result *result);
+void run(char *file_name, int percentile, ProcessorType processor_type, char *cl_device, Result *result);
 
 #endif /* PPR_PERCENTILE_FINDER_H */

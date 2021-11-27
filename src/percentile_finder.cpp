@@ -11,7 +11,7 @@
 #include "naive.h"
 #include "watchdog.h"
 
-void run(char *file_name, int percentile, ProcessorType processor_type, Result *result) {
+void run(char *file_name, int percentile, ProcessorType processor_type, char *cl_device, Result *result) {
     //double naive;
     //find_percentile_naive(file_name, percentile, &naive);
 
@@ -20,7 +20,7 @@ void run(char *file_name, int percentile, ProcessorType processor_type, Result *
     Histogram histogram;
     auto file_size = utils::get_file_size(&file);
     histogram.file_max = file_size;
-    set_processor_type(processor_type);
+    set_processor_type(processor_type, cl_device);
 
     std::vector<long> buckets;
     std::pair<size_t, size_t> bucket;
@@ -65,6 +65,7 @@ void run(char *file_name, int percentile, ProcessorType processor_type, Result *
     auto positions = get_value_positions(&file, &histogram, result->value);
     Watchdog::kick();
 
+    clear_bucketing();
     file.close();
 
     result->first_pos = positions.first;

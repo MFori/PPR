@@ -11,6 +11,22 @@
 #include "histogram.h"
 #include "cl_lib.h"
 
+class ClManager {
+public:
+    ClManager(char *device_name);
+    ~ClManager() noexcept;
+
+    cl::Context context;
+    cl::CommandQueue queue;
+
+    cl::Kernel kernel_bucket_index;
+
+};
+
+void init_cl(char *device_name);
+
+void clear_bucketing_cl();
+
 std::vector<long> create_buckets_cl(std::ifstream *file, Histogram *histogram);
 
 double get_percentile_value_cl(std::ifstream *file, Histogram *histogram);

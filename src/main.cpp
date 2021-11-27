@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     });
 
     struct Result result{};
-    run(params.file_name, params.percentile, params.processor, &result);
+    run(params.file_name, params.percentile, params.processor, params.cl_device, &result);
 
     Watchdog::stop();
 

@@ -46,12 +46,13 @@ public:
 
     unsigned long get_buckets_count() const;
 
-private:
     unsigned int bucket_bits = BUCKET_BITS_START;
     unsigned long long bucket_mask = MAX_NUMBER >> bucket_bits;
     unsigned int bucket_shift = NUMBER_SIZE_BITS - bucket_bits;
     unsigned long long min_index = 0;
     unsigned long buckets_count = (unsigned long) pow(2, bucket_bits);
+
+private:
 
     void shrink_histogram(size_t bucket_index);
 };

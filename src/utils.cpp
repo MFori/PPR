@@ -7,7 +7,6 @@
 
 #include <cmath>
 #include "utils.h"
-#include "cl_lib.h"
 #include <iostream>
 
 bool utils::is_valid_double(double d) {
@@ -28,6 +27,25 @@ bool utils::has_cl_device(char *name) {
         }
     }
     return false;
+}
+
+cl::Device utils::get_cl_device(char *name) {
+    std::vector<cl::Platform> platforms;
+    cl::Platform::get(&platforms);
+
+    for (const auto &platform : platforms) {
+        std::vector<cl::Device> devices;
+        platform.getDevices(CL_DEVICE_TYPE_GPU, &devices);
+        for (auto &device : devices) {
+            std::string device_name = device.getInfo<CL_DEVICE_NAME>();
+
+            if (device_name == name) {
+                return device;
+            }
+        }
+    }
+
+    throw std::runtime_error("OpenCL device not found");
 }
 
 std::vector<std::string> utils::get_cl_devices() {
