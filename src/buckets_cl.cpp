@@ -49,47 +49,69 @@ ClManager::~ClManager() noexcept {
 }
 
 std::vector<long> create_buckets_cl(std::ifstream *file, Histogram *histogram) {
+    bool has_file_min = false;
+    size_t file_min = 0;
+    size_t file_max = histogram->file_max;
+
     cl_int error;
     std::vector<long> buckets(histogram->get_buckets_count());
     std::vector<double> buffer(BUFFER_SIZE_NUMBERS);
     size_t buffer_size_bytes = buffer.size() * NUMBER_SIZE_BYTES;
 
     file->clear();
-    file->seekg(0);
+    file->seekg(histogram->file_min);
     histogram->total_values = 0;
 
     std::vector<uint32_t> indexes(BUFFER_SIZE_NUMBERS);
+    std::vector<char> flags(BUFFER_SIZE_NUMBERS);
 
-    cl::Buffer data(manager->context, CL_MEM_READ_WRITE, buffer_size_bytes, nullptr, &error);
-    cl::Buffer indexes_buf(manager->context, CL_MEM_READ_WRITE, indexes.size() * sizeof(uint32_t), nullptr, &error);
+    cl::Buffer data_buffer(manager->context, CL_MEM_READ_WRITE, buffer_size_bytes, nullptr, &error);
+    cl::Buffer indexes_buffer(manager->context, CL_MEM_READ_WRITE, indexes.size() * sizeof(uint32_t), nullptr, &error);
+    cl::Buffer flags_buffer(manager->context, CL_MEM_READ_WRITE, flags.size() * sizeof(bool), nullptr, &error);
 
-    error = manager->kernel_bucket_index.setArg(0, data);
-    error = manager->kernel_bucket_index.setArg(1, indexes_buf);
-    error = manager->kernel_bucket_index.setArg(2, histogram->value_min);
-    error = manager->kernel_bucket_index.setArg(3, histogram->value_max);
-    error = manager->kernel_bucket_index.setArg(4, histogram->bucket_shift);
-    error = manager->kernel_bucket_index.setArg(5, histogram->min_index);
+    error = manager->kernel_bucket_index.setArg(BUCKET_INDEX_ARG_DATA, data_buffer);
+    error = manager->kernel_bucket_index.setArg(BUCKET_INDEX_ARG_INDEX, indexes_buffer);
+    error = manager->kernel_bucket_index.setArg(BUCKET_INDEX_ARG_FLAG, flags_buffer);
+    error = manager->kernel_bucket_index.setArg(BUCKET_INDEX_ARG_MIN, histogram->value_min);
+    error = manager->kernel_bucket_index.setArg(BUCKET_INDEX_ARG_MAX, histogram->value_max);
+    error = manager->kernel_bucket_index.setArg(BUCKET_INDEX_ARG_SHIFT, histogram->bucket_shift);
+    error = manager->kernel_bucket_index.setArg(BUCKET_INDEX_ARG_OFFSET, histogram->min_index);
+    Watchdog::kick();
 
     while (true) {
+        size_t file_position = file->tellg();
         file->read((char *) buffer.data(), buffer_size_bytes);
         auto read = file->gcount() / NUMBER_SIZE_BYTES;
         if (read < 1) break;
+        Watchdog::kick();
 
-        error = manager->queue.enqueueWriteBuffer(data, CL_TRUE, 0, buffer.size() * sizeof(double), buffer.data());
+        error = manager->queue.enqueueWriteBuffer(data_buffer, CL_TRUE, 0, read * sizeof(double), buffer.data());
         error = manager->queue.enqueueNDRangeKernel(manager->kernel_bucket_index, cl::NullRange, cl::NDRange(read));
-        error = manager->queue.enqueueReadBuffer(indexes_buf, CL_TRUE, 0, indexes.size() * sizeof(uint32_t),
-                                                 indexes.data());
+        error = manager->queue.enqueueReadBuffer(indexes_buffer, CL_TRUE, 0, read * sizeof(uint32_t), indexes.data());
+        error = manager->queue.enqueueReadBuffer(flags_buffer, CL_TRUE, 0, read * sizeof(char), (bool *) flags.data());
 
+        bool had_valid = false;
         for (int i = 0; i < read; i++) {
-            auto value = buffer.at(i);
-            if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
-            histogram->total_values++;
-
-            //auto bucket_index = histogram->bucket_index(value);
-            auto bucket_index = indexes[i];
-            buckets[bucket_index]++;
+            auto flag = (bool) flags.at(i);
+            auto bucket_index = indexes.at(i);
+            buckets[bucket_index] += flag;
+            histogram->total_values += flag;
+            had_valid |= flag;
         }
+
+        Watchdog::kick();
+        if (had_valid && !has_file_min) {
+            has_file_min = true;
+            file_min = file_position;
+        }
+        file_position = file->tellg();
+        if (had_valid) file_max = file_position;
+
+        if (file_position >= histogram->file_max) break;
     }
+
+    histogram->file_min = file_min;
+    histogram->file_max = file_max;
 
     return buckets;
 }

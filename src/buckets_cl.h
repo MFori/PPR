@@ -11,6 +11,14 @@
 #include "histogram.h"
 #include "cl_lib.h"
 
+const unsigned int BUCKET_INDEX_ARG_DATA = 0;
+const unsigned int BUCKET_INDEX_ARG_INDEX = 1;
+const unsigned int BUCKET_INDEX_ARG_FLAG = 2;
+const unsigned int BUCKET_INDEX_ARG_MIN = 3;
+const unsigned int BUCKET_INDEX_ARG_MAX = 4;
+const unsigned int BUCKET_INDEX_ARG_SHIFT = 5;
+const unsigned int BUCKET_INDEX_ARG_OFFSET = 6;
+
 class ClManager {
 public:
     ClManager(char *device_name);

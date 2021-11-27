@@ -1,6 +1,9 @@
+#ifdef ide
 #pragma clang diagnostic push
+#pragma ide diagnostic ignored "bugprone-branch-clone"
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 #pragma ide diagnostic ignored "cppcoreguidelines-narrowing-conversions"
+#endif
 /**
  * Created by Martin on 26.11.2021.
  * me@martinforejt.cz
@@ -27,18 +30,28 @@ const std::string cl_program_src = R"CLC(
         return normal;
     }
 
+    bool in_range_double(const ulong value, const ulong min, const ulong max) {
+        return value >= min && value <= max;
+    }
+
     uint bucket_index(const ulong value, const uint shift, const ulong offset) {
         ulong l_index = value >> shift;
         uint index = l_index - offset;
         return index;
     }
 
-    __kernel void get_bucket_index(__global const ulong *data, __global uint *index,
+    __kernel void get_bucket_index(__global const ulong *data, __global uint *index, __global bool *flag,
                     const ulong min, const ulong max, const uint shift, const ulong offset) {
         int i = get_global_id(0);
         ulong value = data[i];
-        bool normal = valid_double(value);
-        index[i] = bucket_index(value, shift, offset);
+
+        if (valid_double(value) && in_range_double(value, min, max)) {
+            index[i] = bucket_index(value, shift, offset);
+            flag[i] = 1;
+        } else {
+            index[i] = 0;
+            flag[i] = 0;
+        }
     }
 
     )CLC";
@@ -46,4 +59,6 @@ const std::string cl_program_src = R"CLC(
 
 #endif /* PPR_OPENCL_SRC_H */
 
+#ifdef ide
 #pragma clang diagnostic pop
+#endif
