@@ -26,7 +26,7 @@ ClManager::ClManager(char *device_name) {
     cl_int error;
     context = cl::Context(device);
     cl::Program program(context, cl_program_src);
-    error = program.build(std::vector{device});
+    error = program.build(std::vector<cl::Device>{device});
 
     if (error != CL_BUILD_SUCCESS) {
         std::cerr << "[ERROR] OpenCL program build error: " << error << std::endl
@@ -79,16 +79,16 @@ std::vector<long> create_buckets_cl(std::ifstream *file, Histogram *histogram) {
     Watchdog::kick();
 
     while (true) {
-        size_t file_position = file->tellg();
+        size_t file_position = (size_t) file->tellg();
         file->read((char *) buffer.data(), buffer_size_bytes);
         auto read = file->gcount() / NUMBER_SIZE_BYTES;
         if (read < 1) break;
         Watchdog::kick();
 
-        error = manager->queue.enqueueWriteBuffer(data_buffer, CL_TRUE, 0, read * sizeof(double), buffer.data());
-        error = manager->queue.enqueueNDRangeKernel(manager->kernel_bucket_index, cl::NullRange, cl::NDRange(read));
-        error = manager->queue.enqueueReadBuffer(indexes_buffer, CL_TRUE, 0, read * sizeof(uint32_t), indexes.data());
-        error = manager->queue.enqueueReadBuffer(flags_buffer, CL_TRUE, 0, read * sizeof(char), (bool *) flags.data());
+        error = manager->queue.enqueueWriteBuffer(data_buffer, CL_TRUE, 0, (cl::size_type) read * sizeof(double), buffer.data());
+        error = manager->queue.enqueueNDRangeKernel(manager->kernel_bucket_index, cl::NullRange, cl::NDRange((cl::size_type) read));
+        error = manager->queue.enqueueReadBuffer(indexes_buffer, CL_TRUE, 0, (cl::size_type) read * sizeof(uint32_t), indexes.data());
+        error = manager->queue.enqueueReadBuffer(flags_buffer, CL_TRUE, 0, (cl::size_type) read * sizeof(char), (bool *) flags.data());
 
         bool had_valid = false;
         for (int i = 0; i < read; i++) {
@@ -104,7 +104,7 @@ std::vector<long> create_buckets_cl(std::ifstream *file, Histogram *histogram) {
             has_file_min = true;
             file_min = file_position;
         }
-        file_position = file->tellg();
+        file_position = (size_t) file->tellg();
         if (had_valid) file_max = file_position;
 
         if (file_position >= histogram->file_max) break;
@@ -142,7 +142,7 @@ double get_percentile_value_cl(std::ifstream *file, Histogram *histogram) {
         }
 
         Watchdog::kick();
-        size_t file_position = file->tellg();
+        size_t file_position = (size_t) file->tellg();
         if (file_position >= histogram->file_max) break;
     }
 
@@ -169,7 +169,7 @@ std::pair<size_t, size_t> get_value_positions_cl(std::ifstream *file, Histogram 
     size_t last_position = 0;
 
     while (true) {
-        size_t file_position = file->tellg();
+        size_t file_position = (size_t) file->tellg();
         file->read((char *) buffer.data(), buffer_size_bytes);
         auto read = file->gcount() / NUMBER_SIZE_BYTES;
         if (read < 1) break;

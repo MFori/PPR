@@ -48,7 +48,7 @@ void run(char *file_name, int percentile, ProcessorType processor_type, char *cl
         LOG_D("max: " << *((double *) &histogram.value_max));
         LOG_D("position: " << histogram.percentile_position);
 
-        if (buckets[bucket.first] <= MAX_BUCKET_ITEMS || histogram.range() == 0 ||
+        if (buckets[(unsigned long) bucket.first] <= MAX_BUCKET_ITEMS || histogram.range() < 1 ||
             !histogram.can_shrink() || histogram.total_values == 0) {
             break;
         }

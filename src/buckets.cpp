@@ -45,18 +45,18 @@ std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram) {
 std::pair<unsigned long long, size_t> find_bucket(const std::vector<long> &buckets, Histogram *histogram) {
     size_t percentile_position = histogram->percentile_position;
     unsigned long count = 0;
-    unsigned long long bucket_index = buckets.size() - 1;
+    auto bucket_index = buckets.size() - 1;
     bool found = false;
 
-    unsigned long long full_index = bucket_index + histogram->min_index;
+    unsigned long long full_index = (unsigned long long) bucket_index + histogram->min_index;
     auto full_content = full_index << histogram->bucket_shift;
     bool negative = (full_content >> SIGN_SHIFT) == 1;
     // offset = number of negative indexes to read first
-    size_t offset = negative ? ((full_content & MAX_POSITIVE_NUMBER) >> histogram->bucket_shift) : 0;
+    auto offset = (size_t) (negative ? ((full_content & MAX_POSITIVE_NUMBER) >> histogram->bucket_shift) : 0);
 
     // start with negative indexes descending
     while (offset > 0) {
-        count += buckets[bucket_index];
+        count += buckets.at(bucket_index);
         if (count > percentile_position) {
             found = true;
             break;
@@ -65,7 +65,7 @@ std::pair<unsigned long long, size_t> find_bucket(const std::vector<long> &bucke
         offset--;
     }
 
-    size_t remaining = bucket_index;
+    auto remaining = (size_t) bucket_index;
     if (!found) {
         // continue with positive indexes ascending
         for (bucket_index = 0; bucket_index <= remaining; bucket_index++) {

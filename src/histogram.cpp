@@ -24,7 +24,7 @@ unsigned long long Histogram::bucket_index(double value) const {
 
 void Histogram::shrink(const std::vector<long> &buckets, unsigned long long bucket_index, size_t bucket_percentile_position) {
     shrink_histogram(bucket_index);
-    total_values = buckets[bucket_index];
+    total_values = buckets[(unsigned long) bucket_index];
     percentile_position = bucket_percentile_position;
 }
 

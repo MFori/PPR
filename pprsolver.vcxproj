@@ -89,7 +89,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\lib\intel64\vc14;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\IntelSWTools\system_studio_2020\OpenCL\sdk\lib\x64;C:\Program Files (x86)\IntelSWTools\system_studio_2020\OpenCL\sdk\include;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\lib\intel64\vc14;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\lib\intel64\vc14;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\IntelSWTools\system_studio_2020\OpenCL\sdk\lib\x64;C:\Program Files (x86)\IntelSWTools\system_studio_2020\OpenCL\sdk\include;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\lib\intel64\vc14;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.4.0\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,7 +153,6 @@
     <ClCompile Include="src\naive.cpp" />
     <ClCompile Include="src\parameters.cpp" />
     <ClCompile Include="src\percentile_finder.cpp" />
-    <ClCompile Include="src\state.cpp" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\utils.cpp" />
     <ClCompile Include="src\watchdog.cpp" />
@@ -170,7 +169,6 @@
     <ClInclude Include="src\opencl_src.h" />
     <ClInclude Include="src\parameters.h" />
     <ClInclude Include="src\percentile_finder.h" />
-    <ClInclude Include="src\state.h" />
     <ClInclude Include="src\test.h" />
     <ClInclude Include="src\utils.h" />
     <ClInclude Include="src\watchdog.h" />

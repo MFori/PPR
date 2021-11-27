@@ -58,7 +58,7 @@ const unsigned long long MAX_POSITIVE_NUMBER = 0x7FFFFFFFFFFFFFFF;
 /**
  * Max items in bucket to be full processed
  */
-const unsigned long MAX_BUCKET_ITEMS = 1000;
+const unsigned long MAX_BUCKET_ITEMS = 10000;
 /**
  * Bit shift to get sign bit from double
  */

@@ -33,9 +33,6 @@
     <ClCompile Include="src\percentile_finder.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
-    <ClCompile Include="src\state.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
     <ClCompile Include="src\histogram.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
@@ -69,9 +66,6 @@
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
     <ClInclude Include="src\percentile_finder.h">
-      <Filter>Hlavičkové soubory</Filter>
-    </ClInclude>
-    <ClInclude Include="src\state.h">
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
     <ClInclude Include="src\histogram.h">

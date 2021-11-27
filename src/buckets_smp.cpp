@@ -111,7 +111,7 @@ std::pair<size_t, std::vector<double>> SMPFileReader::operator()(tbb::flow_contr
     }
 
     file->read((char *) buffer.data(), buffer_size_bytes);
-    auto read = file->gcount() / NUMBER_SIZE_BYTES;
+    auto read = (size_t) file->gcount() / NUMBER_SIZE_BYTES;
     if (read < 1) {
         fc.stop();
     }
@@ -134,13 +134,12 @@ BucketChunk SMPBucketChunksCreator::operator()(const std::pair<size_t, const std
     chunk.file_max = histogram->file_max;
     chunk.total_values = 0;
 
-    for (int i = 0; i < read; i++) {
+    for (unsigned int i = 0; i < read; i++) {
         auto value = buffer.at(i);
         if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
         chunk.total_values++;
 
-        auto bucket_index = histogram->bucket_index(value);
-        buckets[bucket_index]++;
+        buckets[(unsigned long) histogram->bucket_index(value)]++;
     }
 
     chunk.file_min = file_position;
@@ -179,7 +178,7 @@ std::vector<double> SMPValuesExtractor::operator()(const std::pair<size_t, const
     auto buffer = params.second;
     auto read = buffer.size();
 
-    for (int i = 0; i < read; i++) {
+    for (unsigned int i = 0; i < read; i++) {
         auto value = buffer.at(i);
         if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
         values.push_back(value);
@@ -211,7 +210,7 @@ PositionsResult SMPPositionsExtractor::operator()(const std::pair<size_t, const 
     auto read = buffer.size();
     size_t file_position = params.first;
 
-    for (int i = 0; i < read; i++) {
+    for (unsigned int i = 0; i < read; i++) {
         auto val = buffer.at(i);
         if (val == value) {
             if (!result.has_first) {
@@ -227,7 +226,7 @@ PositionsResult SMPPositionsExtractor::operator()(const std::pair<size_t, const 
 }
 
 void SMPPositionsFinder::operator()(const PositionsResult &position) const {
-    if (position.has_first && (position.first < *first_position || !*has_first == 0)) {
+    if (position.has_first && (position.first < *first_position || !*has_first)) {
         *first_position = position.first;
         *has_first = true;
     }
