@@ -5,7 +5,6 @@
  * Author: Martin Forejt
  */
 
-#include <cmath>
 #include "utils.h"
 #include <iostream>
 

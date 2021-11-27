@@ -9,6 +9,14 @@
 #include "percentile_finder.h"
 #include "logging.h"
 
+/**
+ * Test 1
+ *
+ * for every processing type (naive, single, smp, opencl)
+ * find values of percentiles 1-100 in file_name file
+ *
+ * @param file_name
+ */
 void test_1(char *file_name) {
     for (int i = 1; i <= 100; i++) {
         double naive;
@@ -41,6 +49,7 @@ void test_1(char *file_name) {
     }
 }
 
+// create test file
 void create_test_file(char *file_name) {
     std::ofstream file(file_name, std::ifstream::out | std::ifstream::binary);
     double val = 69;

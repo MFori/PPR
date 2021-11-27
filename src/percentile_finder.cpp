@@ -11,9 +11,11 @@
 #include "watchdog.h"
 
 void run(char *file_name, int percentile, ProcessorType processor_type, char *cl_device, Result *result) {
+    // open file
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
 
     Histogram histogram;
+    // get file size
     auto file_size = utils::get_file_size(&file);
     histogram.file_max = file_size;
     set_processor_type(processor_type, cl_device);
@@ -21,14 +23,19 @@ void run(char *file_name, int percentile, ProcessorType processor_type, char *cl
     std::vector<long> buckets;
     std::pair<unsigned long long, size_t> bucket;
 
+    // main finder loop with 3 operations:
+    // 1. creating buckets based od histogram configuration
+    // 2. finding bucket with percentile value
+    // 3. shrinking histogram to create new histogram configuration
+    // repeating until buckets is sufficient small
     unsigned int step = 0;
     while (true) {
         buckets = create_buckets(&file, &histogram);
         if (step == 0) {
+            // in first step initialize percentile position (in other steps position is calculate when shrinking histogram)
             histogram.percentile_position = get_percentile_position(percentile, histogram.total_values);
         }
         Watchdog::kick();
-        LOG_D("total_values: " << histogram.total_values);
         bucket = find_bucket(buckets, &histogram);
         Watchdog::kick();
         histogram.shrink(buckets, bucket.first, bucket.second);
@@ -54,13 +61,16 @@ void run(char *file_name, int percentile, ProcessorType processor_type, char *cl
         // if histogram min=max take one of them as result value
         result->value = *((double *) &histogram.value_min);
     } else {
+        // get percentile value
         result->value = get_percentile_value(&file, &histogram);
     }
     Watchdog::kick();
 
+    // get first and last position of value in file
     auto positions = get_value_positions(&file, &histogram, result->value);
     Watchdog::kick();
 
+    // allow bucketing to release dynamic memory
     clear_bucketing();
     file.close();
 

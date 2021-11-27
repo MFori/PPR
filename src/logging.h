@@ -1,8 +1,11 @@
 /**
+ * Source code for logging macro from:
+ * https://stackoverflow.com/questions/19415845/a-better-log-macro-using-template-metaprogramming
+ *
  * Created by Martin on 23.11.2021.
  * me@martinforejt.cz
  *
- * Author: Martin Forejt
+ * Author: https://stackoverflow.com/questions/19415845/a-better-log-macro-using-template-metaprogramming
  */
 #ifndef PPR_LOGGING_H
 #define PPR_LOGGING_H

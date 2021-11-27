@@ -3,6 +3,8 @@
  * me@martinforejt.cz
  *
  * Author: Martin Forejt
+ *
+ * Used to include OpenCl in other project files
  */
 #ifndef PPR_CL_LIB_H
 #define PPR_CL_LIB_H

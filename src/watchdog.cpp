@@ -45,9 +45,10 @@ void Watchdog::start_(unsigned int timeout_seconds, std::function<void()> bite_c
         running = true;
         timeout = std::chrono::seconds(timeout_seconds);
         bite = std::move(bite_callback);
-    }
 
-    thread = std::thread(&Watchdog::run, this);
+        // start watchdog thread
+        thread = std::thread(&Watchdog::run, this);
+    }
 }
 
 void Watchdog::stop_() {
@@ -73,7 +74,9 @@ void Watchdog::run() {
 
     while (running) {
         if (stop_condition.wait_for(lock, timeout) == std::cv_status::timeout) {
+            // exit watchdog loop
             running = false;
+            // call bite callback
             bite();
         }
     }

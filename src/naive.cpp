@@ -4,7 +4,6 @@
  *
  * Author: Martin Forejt
  */
-#include <iostream>
 #include <fstream>
 #include <vector>
 #include <algorithm>
@@ -13,6 +12,7 @@
 #include "histogram.h"
 #include "utils.h"
 
+// finding percentile value naive way
 std::pair<size_t, size_t> find_percentile_naive(char *file_name, int percentile, double *value) {
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
     if (!file.is_open()) {
@@ -24,6 +24,7 @@ std::pair<size_t, size_t> find_percentile_naive(char *file_name, int percentile,
     file.clear();
     file.seekg(0);
 
+    // 1. read numbers from file and (valid numbers) push in numbers vector
     std::vector<double> numbers;
     while (true) {
         file.read((char *) buffer.data(), buffer_size_bytes);
@@ -37,10 +38,14 @@ std::pair<size_t, size_t> find_percentile_naive(char *file_name, int percentile,
         }
     }
 
+    // 2. sort all numbers
     std::sort(numbers.begin(), numbers.end());
+    // 3. get percentile position
     long n = (long) (((double) percentile / 100) * numbers.size());
     if (percentile == 100) n = (long) (numbers.size() - 1);
     LOG_D("naive position: " << n << ", " << numbers.size());
+
+    // 4. get percentile value as number at position
     double percentile_value = numbers.at(n);
 
     file.clear();
@@ -50,6 +55,7 @@ std::pair<size_t, size_t> find_percentile_naive(char *file_name, int percentile,
     long last = 0;
     long pos = 0;
 
+    // 5. read file again and find first and last occurrence of value
     while (true) {
         file.read((char *) buffer.data(), buffer_size_bytes);
         auto read = file.gcount() / NUMBER_SIZE_BYTES;

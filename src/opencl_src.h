@@ -15,6 +15,9 @@
 
 #include <string>
 
+/**
+ * OpenCl program source code
+ */
 const std::string cl_program_src = R"CLC(
 
     __constant const ulong d_exp = 0x7FF0000000000000;
