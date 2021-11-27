@@ -22,10 +22,17 @@ void help() {
 }
 
 void print_result(Result *result) {
-    LOG("Result found:");
-    LOG("- Percentile value: " << result->value << " (" << std::hexfloat << std::uppercase << result->value << ")");
-    LOG("- First position: " << std::hex << std::uppercase << result->first_pos);
-    LOG("- Last position: " << std::hex << std::uppercase << result->last_pos);
+    std::wcout << std::hexfloat << result->value << std::hex
+               << " " <<
+               result->first_pos
+               << " " <<
+               result->last_pos
+               << std::endl;
+
+    LOG_D("Result found:");
+    LOG_D("- Percentile value: " << result->value << " (" << std::hexfloat << std::uppercase << result->value << ")");
+    LOG_D("- First position: " << std::hex << std::uppercase << result->first_pos);
+    LOG_D("- Last position: " << std::hex << std::uppercase << result->last_pos);
 }
 
 int main(int argc, char *argv[]) {
@@ -43,6 +50,7 @@ int main(int argc, char *argv[]) {
                   << "\n- OpenCl device: " << (params.processor == ProcessorType::OpenCL ? params.cl_device : "-"));
 
     //test_1(params.file_name);
+    //create_test_file("test_3.test");
     //return 0;
 
     Watchdog::start(WATCHDOG_TIMEOUT_S, [] {

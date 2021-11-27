@@ -9,4 +9,6 @@
 
 void test_1(char *file_name);
 
+void create_test_file(char *file_name);
+
 #endif /* PPR_TEST_H */

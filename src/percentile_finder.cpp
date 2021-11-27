@@ -8,13 +8,9 @@
 #include "percentile_finder.h"
 #include "utils.h"
 #include "logging.h"
-#include "naive.h"
 #include "watchdog.h"
 
 void run(char *file_name, int percentile, ProcessorType processor_type, char *cl_device, Result *result) {
-    //double naive;
-    //find_percentile_naive(file_name, percentile, &naive);
-
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
 
     Histogram histogram;
@@ -23,7 +19,7 @@ void run(char *file_name, int percentile, ProcessorType processor_type, char *cl
     set_processor_type(processor_type, cl_device);
 
     std::vector<long> buckets;
-    std::pair<size_t, size_t> bucket;
+    std::pair<unsigned long long, size_t> bucket;
 
     unsigned int step = 0;
     while (true) {
@@ -40,9 +36,9 @@ void run(char *file_name, int percentile, ProcessorType processor_type, char *cl
 
         LOG_D("total_values: " << histogram.total_values);
         LOG_D("bucket_index: " << bucket.first);
+        LOG_D("min_index: " << histogram.min_index);
         LOG_D("min: " << *((double *) &histogram.value_min));
         LOG_D("max: " << *((double *) &histogram.value_max));
-        LOG_D("range: " << histogram.range());
         LOG_D("position: " << histogram.percentile_position);
 
         if (buckets[bucket.first] <= MAX_BUCKET_ITEMS || histogram.range() <= 1 ||

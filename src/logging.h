@@ -59,6 +59,7 @@ inline void output(std::ostream &os, None) {}
 template<typename List>
 void Log(const char *file, int line,
          LogData<List> &&data) NOINLINE_ATTRIBUTE {
+    std::cout << std::dec;
     if (line != -1) {
         std::cout << file << ":" << line << ": ";
     }

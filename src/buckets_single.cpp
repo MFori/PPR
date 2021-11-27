@@ -85,8 +85,6 @@ double get_percentile_value_single(std::ifstream *file, Histogram *histogram) {
     }
 
     return *std::next(values.begin(), histogram->percentile_position);
-    //std::sort(values.begin(), values.end());
-    //return values[histogram->percentile_position];
 }
 
 std::pair<size_t, size_t> get_value_positions_single(std::ifstream *file, Histogram *histogram, double value) {

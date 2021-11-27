@@ -9,6 +9,6 @@
 
 #include <vector>
 
-std::pair<long, long> find_percentile_naive(char *file_name, int percentile, double *value);
+std::pair<size_t, size_t> find_percentile_naive(char *file_name, int percentile, double *value);
 
 #endif /* PPR_NAIVE_H */

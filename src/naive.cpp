@@ -13,7 +13,7 @@
 #include "histogram.h"
 #include "utils.h"
 
-std::pair<long, long> find_percentile_naive(char *file_name, int percentile, double *value) {
+std::pair<size_t, size_t> find_percentile_naive(char *file_name, int percentile, double *value) {
     std::ifstream file(file_name, std::ifstream::in | std::ifstream::binary);
     if (!file.is_open()) {
         std::pair<long, long> res(0, 0);
@@ -40,7 +40,7 @@ std::pair<long, long> find_percentile_naive(char *file_name, int percentile, dou
     std::sort(numbers.begin(), numbers.end());
     long n = (long) (((double) percentile / 100) * numbers.size());
     if (percentile == 100) n = (long) (numbers.size() - 1);
-    std::cout << "naive position: " << n << ", " << numbers.size() << std::endl;
+    LOG_D("naive position: " << n << ", " << numbers.size());
     double percentile_value = numbers.at(n);
 
     file.clear();
@@ -51,7 +51,7 @@ std::pair<long, long> find_percentile_naive(char *file_name, int percentile, dou
     long pos = 0;
 
     while (true) {
-        file.read((char*) buffer.data(), buffer_size_bytes);
+        file.read((char *) buffer.data(), buffer_size_bytes);
         auto read = file.gcount() / NUMBER_SIZE_BYTES;
         if (read < 1) break;
 
@@ -68,6 +68,9 @@ std::pair<long, long> find_percentile_naive(char *file_name, int percentile, dou
             pos++;
         }
     }
+
+    first *= NUMBER_SIZE_BYTES;
+    last *= NUMBER_SIZE_BYTES;
 
     file.close();
     LOG_D("naive:\n" << percentile_value << "\n" << first << "\n" << last);

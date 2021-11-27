@@ -37,6 +37,7 @@ struct BucketChunk {
     size_t file_min = 0;
     size_t file_max = 0;
     size_t total_values = 0;
+    bool had_valid = false;
     std::vector<long> buckets;
 };
 
@@ -62,6 +63,8 @@ private:
     std::vector<long> *buckets;
     size_t *file_min;
     size_t *file_max;
+    bool has_min_val = false;
+    bool *has_min = &has_min_val;
 };
 
 class SMPValuesExtractor {
@@ -84,11 +87,17 @@ private:
     std::vector<double> *m_values;
 };
 
+struct PositionsResult {
+    size_t first;
+    size_t last;
+    bool has_first;
+};
+
 class SMPPositionsExtractor {
 public:
     SMPPositionsExtractor(double value) : value(value) {};
 
-    std::pair<size_t, size_t> operator()(const std::pair<size_t, const std::vector<double>> &params) const;
+    PositionsResult operator()(const std::pair<size_t, const std::vector<double>> &params) const;
 
 private:
     double value;
@@ -99,7 +108,7 @@ public:
     SMPPositionsFinder(size_t *first_position, size_t *last_position) : first_position(first_position),
                                                                         last_position(last_position) {};
 
-    void operator()(const std::pair<size_t, size_t> &position) const;
+    void operator()(const PositionsResult &position) const;
 
 private:
     size_t *first_position;

@@ -75,11 +75,11 @@ std::pair<size_t, size_t> get_value_positions_smp(std::ifstream *file, Histogram
                                    tbb::filter_mode::serial_in_order, SMPFileReader(file, histogram)
                            )
                            &
-                           tbb::make_filter<std::pair<size_t, std::vector<double>>, std::pair<size_t, size_t>>(
+                           tbb::make_filter<std::pair<size_t, std::vector<double>>, PositionsResult>(
                                    tbb::filter_mode::parallel, SMPPositionsExtractor(value)
                            )
                            &
-                           tbb::make_filter<std::pair<size_t, size_t>, void>(
+                           tbb::make_filter<PositionsResult, void>(
                                    tbb::filter_mode::serial_out_of_order,
                                    SMPPositionsFinder(&first_position, &last_position)
                            )
@@ -127,8 +127,8 @@ BucketChunk SMPBucketChunksCreator::operator()(const std::pair<size_t, const std
     chunk.file_min = 0;
     chunk.file_max = histogram->file_max;
     chunk.total_values = 0;
+    chunk.had_valid = false;
 
-    bool had_valid = false;
     for (int i = 0; i < read; i++) {
         auto value = buffer.at(i);
         if (!utils::is_valid_double((double) value) || !histogram->contains(value)) continue;
@@ -136,13 +136,11 @@ BucketChunk SMPBucketChunksCreator::operator()(const std::pair<size_t, const std
 
         auto bucket_index = histogram->bucket_index(value);
         buckets[bucket_index]++;
-        had_valid = true;
+        chunk.had_valid = true;
     }
 
-    if (had_valid) {
-        chunk.file_min = file_position;
-        chunk.file_max = file_position + (BUFFER_SIZE_NUMBERS * NUMBER_SIZE_BYTES);
-    }
+    chunk.file_min = file_position;
+    chunk.file_max = file_position + (BUFFER_SIZE_NUMBERS * NUMBER_SIZE_BYTES);
 
     Watchdog::kick();
 
@@ -153,7 +151,8 @@ BucketChunk SMPBucketChunksCreator::operator()(const std::pair<size_t, const std
 void SMPBucketsCreator::operator()(const BucketChunk &bucketChunk) const {
     histogram->total_values += bucketChunk.total_values;
 
-    if ((bucketChunk.file_min != 0 && bucketChunk.file_min < *file_min) || *file_min == 0) {
+    if (bucketChunk.had_valid && (bucketChunk.file_min < *file_min || !has_min_val)) {
+        *has_min = true;
         *file_min = bucketChunk.file_min;
     }
     if (bucketChunk.file_max > *file_max) {
@@ -191,10 +190,12 @@ void SMPPercentileFinder::operator()(const std::vector<double> &values) const {
     m_values->insert(m_values->end(), values.begin(), values.end());
 }
 
-std::pair<size_t, size_t>
-SMPPositionsExtractor::operator()(const std::pair<size_t, const std::vector<double>> &params) const {
-    size_t first_position = 0;
-    size_t last_position = 0;
+PositionsResult SMPPositionsExtractor::operator()(const std::pair<size_t, const std::vector<double>> &params) const {
+    PositionsResult result{};
+    result.has_first = false;
+    result.first = 0;
+    result.last = 0;
+
     auto buffer = params.second;
     auto read = buffer.size();
     size_t file_position = params.first;
@@ -202,23 +203,23 @@ SMPPositionsExtractor::operator()(const std::pair<size_t, const std::vector<doub
     for (int i = 0; i < read; i++) {
         auto val = buffer.at(i);
         if (val == value) {
-            if (first_position == 0) {
-                first_position = file_position + i * NUMBER_SIZE_BYTES;
+            if (!result.has_first) {
+                result.first = file_position + i * NUMBER_SIZE_BYTES;
+                result.has_first = true;
             }
-            last_position = file_position + i * NUMBER_SIZE_BYTES;
+            result.last = file_position + i * NUMBER_SIZE_BYTES;
         }
     }
 
     Watchdog::kick();
-    auto positions = std::pair<size_t, size_t>(first_position, last_position);
-    return positions;
+    return result;
 }
 
-void SMPPositionsFinder::operator()(const std::pair<size_t, size_t> &position) const {
-    if ((position.first != 0 && position.first < *first_position) || *first_position == 0) {
+void SMPPositionsFinder::operator()(const PositionsResult &position) const {
+    if (position.has_first && (position.first < *first_position || *first_position == 0)) {
         *first_position = position.first;
     }
-    if (position.second > *last_position) {
-        *last_position = position.second;
+    if (position.last > *last_position) {
+        *last_position = position.last;
     }
 }

@@ -26,7 +26,7 @@ long get_percentile_position(int percentile, size_t total_values);
 std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram);
 
 // find bucket with percentile, return bucket index
-std::pair<size_t, size_t> find_bucket(const std::vector<long> &buckets, Histogram *histogram);
+std::pair<unsigned long long, size_t> find_bucket(const std::vector<long> &buckets, Histogram *histogram);
 
 double get_percentile_value(std::ifstream *file, Histogram *histogram);
 

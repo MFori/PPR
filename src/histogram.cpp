@@ -16,13 +16,13 @@ unsigned long long Histogram::range() const {
     return value_max - value_min;
 }
 
-size_t Histogram::bucket_index(double value) const {
+unsigned long long Histogram::bucket_index(double value) const {
     auto content = *((unsigned long long *) &value);
     auto index = content >> bucket_shift;
     return index - min_index;
 }
 
-void Histogram::shrink(const std::vector<long> &buckets, size_t bucket_index, size_t bucket_percentile_position) {
+void Histogram::shrink(const std::vector<long> &buckets, unsigned long long bucket_index, size_t bucket_percentile_position) {
     shrink_histogram(bucket_index);
     total_values = buckets[bucket_index];
     percentile_position = bucket_percentile_position;
@@ -36,7 +36,7 @@ unsigned long Histogram::get_buckets_count() const {
     return buckets_count;
 }
 
-void Histogram::shrink_histogram(size_t bucket_index) {
+void Histogram::shrink_histogram(unsigned long long bucket_index) {
     min_index = value_min >> bucket_shift;
     bucket_index += min_index;
 

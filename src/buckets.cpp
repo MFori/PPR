@@ -6,6 +6,7 @@
  */
 #include "buckets.h"
 #include <vector>
+#include <iostream>
 #include "buckets_single.h"
 #include "buckets_smp.h"
 #include "buckets_cl.h"
@@ -40,22 +41,30 @@ std::vector<long> create_buckets(std::ifstream *file, Histogram *histogram) {
     }
 }
 
-std::pair<size_t, size_t> find_bucket(const std::vector<long> &buckets, Histogram *histogram) {
+std::pair<unsigned long long, size_t> find_bucket(const std::vector<long> &buckets, Histogram *histogram) {
     size_t percentile_position = histogram->percentile_position;
     unsigned long count = 0;
-    size_t bucket_index;
+    unsigned long long bucket_index = buckets.size() - 1;
     bool found = false;
 
-    for (bucket_index = buckets.size() - 1; bucket_index >= buckets.size() / 2; bucket_index--) {
+    unsigned long long full_index = bucket_index + histogram->min_index;
+    auto full_content = full_index << histogram->bucket_shift;
+    bool negative = (full_content >> SIGN_SHIFT) == 1;
+    size_t offset = negative ? ((full_content & MAX_POSITIVE_NUMBER) >> histogram->bucket_shift) : 0;
+
+    while (offset > 0) {
         count += buckets[bucket_index];
         if (count > percentile_position) {
             found = true;
             break;
         }
+        bucket_index--;
+        offset--;
     }
 
+    size_t remaining = bucket_index;
     if (!found) {
-        for (bucket_index = 0; bucket_index < buckets.size() / 2; bucket_index++) {
+        for (bucket_index = 0; bucket_index <= remaining; bucket_index++) {
             count += buckets[bucket_index];
             if (count > percentile_position) {
                 break;
@@ -64,7 +73,7 @@ std::pair<size_t, size_t> find_bucket(const std::vector<long> &buckets, Histogra
     }
 
     size_t bucket_percentile_position = percentile_position - (count - buckets[bucket_index]);
-    auto res = std::pair<size_t, size_t>(bucket_index, bucket_percentile_position);
+    auto res = std::pair<unsigned long long, size_t>(bucket_index, bucket_percentile_position);
     return res;
 }
 

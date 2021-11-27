@@ -21,7 +21,9 @@ const int BUCKET_BITS_MAX = 48;
 const unsigned long SUB_BUCKETS_COUNT = (unsigned long) pow(2, BUCKET_STEP_BITS);
 
 const unsigned long long MAX_NUMBER = 0xFFFFFFFFFFFFFFFF;
+const unsigned long long MAX_POSITIVE_NUMBER = 0x7FFFFFFFFFFFFFFF;
 const unsigned long MAX_BUCKET_ITEMS = 1000;
+const unsigned int SIGN_SHIFT = 63;
 
 class Histogram {
 public:
@@ -38,11 +40,11 @@ public:
 
     unsigned long long range() const;
 
-    size_t bucket_index(double value) const;
+    unsigned long long bucket_index(double value) const;
 
     bool can_shrink() const;
 
-    void shrink(const std::vector<long> &buckets, size_t bucket_index, size_t bucket_percentile_position);
+    void shrink(const std::vector<long> &buckets, unsigned long long bucket_index, size_t bucket_percentile_position);
 
     unsigned long get_buckets_count() const;
 
@@ -54,7 +56,7 @@ public:
 
 private:
 
-    void shrink_histogram(size_t bucket_index);
+    void shrink_histogram(unsigned long long bucket_index);
 };
 
 #endif /* PPR_HISTOGRAM_H */

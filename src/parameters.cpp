@@ -6,13 +6,12 @@
  */
 #include <cstdlib>
 #include <fstream>
-#include <iostream>
 #include "parameters.h"
 #include "logging.h"
 #include "utils.h"
 
 int parseParams(int argc, char *argv[], ProgramParams *params) {
-    std::cout << "Parsing program params...\n";
+    LOG_D("Parsing program params...");
     if (argc != 4) {
         return -1;
     }

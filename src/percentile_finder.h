@@ -13,8 +13,8 @@ const unsigned int MAX_STEPS = 10;
 
 struct Result {
     double value;
-    long first_pos;
-    long last_pos;
+    size_t first_pos;
+    size_t last_pos;
 };
 
 void run(char *file_name, int percentile, ProcessorType processor_type, char *cl_device, Result *result);
