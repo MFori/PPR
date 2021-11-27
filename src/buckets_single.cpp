@@ -10,7 +10,6 @@
 #include "utils.h"
 #include "watchdog.h"
 
-// create buckets, return buckets
 std::vector<long> create_buckets_single(std::ifstream *file, Histogram *histogram) {
     bool has_file_min = false;
     size_t file_min = 0;

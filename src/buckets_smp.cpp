@@ -133,7 +133,6 @@ BucketChunk SMPBucketChunksCreator::operator()(const std::pair<size_t, const std
     chunk.file_min = 0;
     chunk.file_max = histogram->file_max;
     chunk.total_values = 0;
-    chunk.had_valid = false;
 
     for (int i = 0; i < read; i++) {
         auto value = buffer.at(i);
@@ -142,7 +141,6 @@ BucketChunk SMPBucketChunksCreator::operator()(const std::pair<size_t, const std
 
         auto bucket_index = histogram->bucket_index(value);
         buckets[bucket_index]++;
-        chunk.had_valid = true;
     }
 
     chunk.file_min = file_position;
@@ -157,7 +155,7 @@ BucketChunk SMPBucketChunksCreator::operator()(const std::pair<size_t, const std
 void SMPBucketsCreator::operator()(const BucketChunk &bucketChunk) const {
     histogram->total_values += bucketChunk.total_values;
 
-    if (bucketChunk.had_valid && (bucketChunk.file_min < *file_min || !*has_min)) {
+    if (bucketChunk.total_values > 0 && (bucketChunk.file_min < *file_min || !*has_min)) {
         *has_min = true;
         *file_min = bucketChunk.file_min;
     }

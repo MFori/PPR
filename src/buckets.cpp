@@ -10,11 +10,13 @@
 #include "buckets_smp.h"
 #include "buckets_cl.h"
 
+// global processing type
 ProcessorType buckets_proc_type;
 
 void set_processor_type(ProcessorType processor_type, char *cl_device) {
     buckets_proc_type = processor_type;
     if (processor_type == ProcessorType::OpenCL) {
+        // init OpenCl context
         init_cl(cl_device);
     }
 }
@@ -49,8 +51,10 @@ std::pair<unsigned long long, size_t> find_bucket(const std::vector<long> &bucke
     unsigned long long full_index = bucket_index + histogram->min_index;
     auto full_content = full_index << histogram->bucket_shift;
     bool negative = (full_content >> SIGN_SHIFT) == 1;
+    // offset = number of negative indexes to read first
     size_t offset = negative ? ((full_content & MAX_POSITIVE_NUMBER) >> histogram->bucket_shift) : 0;
 
+    // start with negative indexes descending
     while (offset > 0) {
         count += buckets[bucket_index];
         if (count > percentile_position) {
@@ -63,6 +67,7 @@ std::pair<unsigned long long, size_t> find_bucket(const std::vector<long> &bucke
 
     size_t remaining = bucket_index;
     if (!found) {
+        // continue with positive indexes ascending
         for (bucket_index = 0; bucket_index <= remaining; bucket_index++) {
             count += buckets[bucket_index];
             if (count > percentile_position) {
