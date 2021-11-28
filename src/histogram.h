@@ -16,7 +16,7 @@ const unsigned int MEMORY_LIMIT = 200 * 1024 * 1024; // 200MB in bytes
 /**
  * Number of doubles to read from file to buffer
  */
-const int BUFFER_SIZE_NUMBERS = 80000;
+const int BUFFER_SIZE_NUMBERS = 50000;
 
 /**
  * Number of bytes of one double number

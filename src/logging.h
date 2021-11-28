@@ -13,7 +13,7 @@
 #include <iostream>
 
 // Define debug mode
-#define DEBUG
+//#define DEBUG
 
 #ifndef NOINLINE_ATTRIBUTE
 #ifdef __ICC

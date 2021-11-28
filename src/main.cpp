@@ -9,7 +9,6 @@
 #include "buckets.h"
 #include "logging.h"
 #include "watchdog.h"
-#include "test.h"
 
 /**
  * Watchdog timeout in seconds
@@ -62,9 +61,9 @@ int main(int argc, char *argv[]) {
                   << "\n- processor type: " << (int) params.processor
                   << "\n- OpenCl device: " << (params.processor == ProcessorType::OpenCL ? params.cl_device : "-"));
 
-    test_1(params.file_name);
+    //test_1(params.file_name);
     //create_test_file("test_4.test");
-    return 0;
+    //return 0;
 
     // start watchdog
     Watchdog::start(WATCHDOG_TIMEOUT_S, [] {
